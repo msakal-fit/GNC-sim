@@ -381,7 +381,7 @@ This method will automatically add all the MATLAB files to the folder path.
 ## Container Management Commands
 
 ### Post Installation
-After the initial setup (or after closing the command propmt), use these commands to run the simulation:
+After the initial setup (or after closing the command prompt), use these commands to run the simulation:
 
 #### Step 1: Open Ubuntu terminal
 To open the ubuntu terminal, open the command prompt and then select ubuntu from the dropdown menu

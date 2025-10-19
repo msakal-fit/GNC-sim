@@ -11,10 +11,10 @@ This guide provides installation instructions for both Windows and Linux systems
 ---
 
 ## Table of Contents
-- [Windows Installation](#windows-installation)
-- [Linux Installation](#linux-installation)
-- [Container Management Commands](#container-management-commands)
-- [Troubleshooting](#troubleshooting)
+A) (i)[Windows Installation](#windows-installation)
+   (ii) [Linux Installation](#linux-installation)
+B) [Container Management Commands](#container-management-commands)
+C) [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -112,19 +112,21 @@ Navigate to the folder where you cloned the GitHub repository:
 cd /mnt/c/users/your_username/Documents/GNC-sim/
 ```
 
-Replace `your_username` with your actual Windows username.
+**Replace `your_username` with your actual Windows username.**
 
 #### Step 9: Create and Run Docker Container
 
-Create a persistent container from the pulled image:
+Create a persistent container from the pulled image by running the following command in the ubuntu terminal:
 ```bash
 docker run -it \
-  --name gnc_simulator \
-  --privileged \
-  --env="DISPLAY=:0" \
-  --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-  --volume="$PWD:/root/sim_ws/GNC_algorithms" \
-  prenithreddy/gnc_simulator:latest
+ --name gnc_simulator \
+ --privileged \
+ -p 8766:8766 \
+ -p 8888:8888 \
+ --env="DISPLAY=:0" \
+ --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+ --volume="$PWD:/root/sim_ws/GNC_algorithms" \
+ prenithreddy/gnc_simulator:latest
 ```
 
 #### Step 10: Navigate to Simulator Folder
@@ -162,12 +164,12 @@ Select the drone model and the world file as per your choice.
 
 #### Step 12: Open MATLAB
 
-1. In cmd, open another Ubuntu terminal from the dropdown menu
-2. In the Ubuntu terminal, navigate to the MATLAB folder:
+1. In cmd, open a new command prompt terminal from the dropdown menu
+2. In the command prompt terminal, navigate to the MATLAB folder:
    ```bash
    cd /mnt/c/users/your_username/Documents/GNC-sim/MATLAB
    ```
-   Replace `your_username` with your actual Windows username.
+   **Replace `your_username` with your actual Windows username.**
 
 3. Open MATLAB from the Ubuntu terminal using the following command (this method will add all the MATLAB files to the folder path automatically):
    ```bash

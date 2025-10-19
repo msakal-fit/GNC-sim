@@ -11,10 +11,15 @@ This guide provides installation instructions for both Windows and Linux systems
 ---
 
 ## Table of Contents
-A) (i)[Windows Installation](#windows-installation)
-   (ii) [Linux Installation](#linux-installation)
-B) [Container Management Commands](#container-management-commands)
-C) [Troubleshooting](#troubleshooting)
+### A) Initial Installation (One-Time Setup)
+- [Windows Installation](#windows-installation)
+- [Linux Installation](#linux-installation)
+
+### B) Container Access & Management
+
+
+### C) Troubleshooting & Maintenance
+
 
 ---
 

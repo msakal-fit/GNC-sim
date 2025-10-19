@@ -16,10 +16,12 @@ This guide provides installation instructions for both Windows and Linux systems
 - [Linux Installation](#linux-installation)
 
 ### B) Container Access & Management
-
+- [Post Installation](#post-installation)
 
 ### C) Troubleshooting & Maintenance
-
+- [Windows-Specific Issues](#windows-specific-issues)
+- [Linux-Specific Issues](#linux-specific-issues)
+- [General Issues](#general-issues)
 
 ---
 
@@ -378,46 +380,42 @@ This method will automatically add all the MATLAB files to the folder path.
 
 ## Container Management Commands
 
-After the initial setup, you can manage your persistent Docker container using these commands:
+### Post Installation
+After the initial setup (or after closing the command propmt), use these commands to run the simulation:
 
-### Stop the Container
-```bash
-docker stop gnc_simulator
-```
+#### Step 1: Open Ubuntu terminal
+To open the ubuntu terminal, open the command prompt and then select ubuntu from the dropdown menu
 
-### Start the Container Again
+#### Step 2: Start the Container Again
 ```bash
 docker start gnc_simulator
 ```
 
-### Attach to the Running Container
+#### Step 3: Attach to the Running Container
 ```bash
 docker attach gnc_simulator
 ```
 
-### Execute Commands in the Container
+#### Stop the Container (if needed)
+
+**Use the following commands only when you need to stop and remove the docker container**
+
 ```bash
-docker exec -it gnc_simulator bash
+docker stop gnc_simulator
+docker rm gnc_simulator
 ```
 
-### Check Container Status
+**Note: When you close the command prompt the docker container will automatically be stopped, so you dont have to run the above command every single time**
+
+
+#### Check Container Status
 ```bash
 docker ps -a
 ```
 
-### Check Container Size
+#### Check Container Size
 ```bash
 docker ps -s
-```
-
-### Remove Container (if needed)
-```bash
-docker rm gnc_simulator
-```
-
-### Clean Up Docker System
-```bash
-docker system prune -a
 ```
 
 ---

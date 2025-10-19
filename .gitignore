@@ -26,7 +26,6 @@ Thumbs.db
 
 # Add any other specific files/folders you want to ignore
 MATLAB/test_scripts/
-MATLAB/examples/
 MATLAB/GNC_Algorithms/Guidance/MPC/casadi/
 MATLAB/GNC_Algorithms/Navigation/reactive/
 MATLAB/GNC_Algorithms/Navigation/config/get_reactive_config.m
@@ -40,6 +39,11 @@ backup_scripts/
 MATLAB/GNC_Algorithms/Control/LQR/run_LQR.m
 MATLAB/GNC_Algorithms/Control/LQR/compute_k_matrix.m
 MATLAB/GNC_Algorithms/Navigation/estimators/
-MATLAB/GNC_Algorithms/Control/LQT/
+MATLAB/GNC_Algorithms/Control/LQT/*
+MATLAB/GNC_Algorithms/Control/PID/
+MATLAB/GNC_Algorithms/Control/test_scripts/
 MATLAB/GNC_Algorithms/Guidance/*
 MATLAB/GNC_Algorithms/Navigation/*
+MATLAB/GNC_Algorithms/Control/test_controllers.m
+MATLAB/GNC_Algorithms/SIH_dynamic_model.pdf
+MATLAB/GNC_Algorithms/Control/configs/*

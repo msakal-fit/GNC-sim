@@ -1,14 +1,27 @@
 # GNC Simulator Installation Guide
 
+Use the following template as your main script to run your controller
+
+   ```
+   MATLAB\GNC_Algorithms\Control\run_CONTROLLER_template.m
+   ```
+
 This guide provides installation instructions for both Windows and Linux systems.
 
 ---
 
 ## Table of Contents
+### A) Initial Installation (One-Time Setup)
 - [Windows Installation](#windows-installation)
 - [Linux Installation](#linux-installation)
-- [Container Management Commands](#container-management-commands)
-- [Troubleshooting](#troubleshooting)
+
+### B) Container Access & Management
+- [Post Installation](#post-installation)
+
+### C) Troubleshooting & Maintenance
+- [Windows-Specific Issues](#windows-specific-issues)
+- [Linux-Specific Issues](#linux-specific-issues)
+- [General Issues](#general-issues)
 
 ---
 
@@ -55,23 +68,26 @@ Since Docker is built on Linux, we need to emulate a Linux environment on Window
 2. Search and install **Ubuntu 24**
 3. Restart the computer if needed
 
-#### Step 4: Configure Docker Desktop with WSL Integration
+#### Step 4: Set Up Ubuntu Terminal
 
-1. Open Docker Desktop application
-2. You can skip the sign-in process if prompted
-3. Click on the gear icon (Settings) located on the top right
-4. Click on **Resources**
-5. Select **WSL Integration**
-6. Enable the button next to Ubuntu 24 (it should turn blue from gray)
-7. Click **Apply & Restart** to apply the settings
-
-#### Step 5: Set Up Ubuntu Terminal
-
-1. Go to the cmd (opened normally without admin rights)
+1. Once the installation is completed, go to the cmd (opened normally without admin rights)
 2. On the top, you will find a dropdown button
 3. Select **Ubuntu 24** from the dropdown list
 4. Ubuntu 24 terminal will open
 5. Set a username and password of your choice (ensure your username has no spaces)
+
+#### Step 5: Configure Docker Desktop with WSL Integration
+
+1. Once you set up the ubuntu terminal with your username and password.
+2. Open Docker Desktop application
+3. You can skip the sign-in process if prompted
+4. Click on the gear icon (Settings) located on the top right
+5. Click on **Resources**
+6. Select **WSL Integration**
+7. Enable the button next to Ubuntu 24 (it should turn blue from gray)
+8. Click **Apply & Restart** to apply the settings in the docker application
+
+
 
 #### Step 6: Test Display Settings
 
@@ -89,7 +105,7 @@ A clock UI should appear. This confirms that WSL is able to forward the UI betwe
 
 #### Step 7: Pull Docker Image
 
-Pull the Docker image from Docker Hub:
+In the same ubuntu terminal, Pull the Docker image from Docker Hub by running the following code:
 ```bash
 docker pull prenithreddy/gnc_simulator:latest
 ```
@@ -103,19 +119,21 @@ Navigate to the folder where you cloned the GitHub repository:
 cd /mnt/c/users/your_username/Documents/GNC-sim/
 ```
 
-Replace `your_username` with your actual Windows username.
+**Replace `your_username` with your actual Windows username.**
 
 #### Step 9: Create and Run Docker Container
 
-Create a persistent container from the pulled image:
+Create a persistent container from the pulled image by running the following command in the ubuntu terminal:
 ```bash
 docker run -it \
-  --name gnc_simulator \
-  --privileged \
-  --env="DISPLAY=:0" \
-  --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-  --volume="$PWD:/root/sim_ws/GNC_algorithms" \
-  prenithreddy/gnc_simulator:latest
+ --name gnc_simulator \
+ --privileged \
+ -p 8766:8766 \
+ -p 8888:8888 \
+ --env="DISPLAY=:0" \
+ --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+ --volume="$PWD:/root/sim_ws/GNC_algorithms" \
+ prenithreddy/gnc_simulator:latest
 ```
 
 #### Step 10: Navigate to Simulator Folder
@@ -153,12 +171,12 @@ Select the drone model and the world file as per your choice.
 
 #### Step 12: Open MATLAB
 
-1. In cmd, open another Ubuntu terminal from the dropdown menu
-2. In the Ubuntu terminal, navigate to the MATLAB folder:
+1. In cmd, open a new command prompt terminal from the dropdown menu
+2. In the command prompt terminal, navigate to the MATLAB folder:
    ```bash
    cd /mnt/c/users/your_username/Documents/GNC-sim/MATLAB
    ```
-   Replace `your_username` with your actual Windows username.
+   **Replace `your_username` with your actual Windows username.**
 
 3. Open MATLAB from the Ubuntu terminal using the following command (this method will add all the MATLAB files to the folder path automatically):
    ```bash
@@ -362,46 +380,42 @@ This method will automatically add all the MATLAB files to the folder path.
 
 ## Container Management Commands
 
-After the initial setup, you can manage your persistent Docker container using these commands:
+### Post Installation
+After the initial setup (or after closing the command prompt), use these commands to run the simulation:
 
-### Stop the Container
-```bash
-docker stop gnc_simulator
-```
+#### Step 1: Open Ubuntu terminal
+To open the ubuntu terminal, open the command prompt and then select ubuntu from the dropdown menu
 
-### Start the Container Again
+#### Step 2: Start the Container Again
 ```bash
 docker start gnc_simulator
 ```
 
-### Attach to the Running Container
+#### Step 3: Attach to the Running Container
 ```bash
 docker attach gnc_simulator
 ```
 
-### Execute Commands in the Container
+#### Stop the Container (if needed)
+
+**Use the following commands only when you need to stop and remove the docker container**
+
 ```bash
-docker exec -it gnc_simulator bash
+docker stop gnc_simulator
+docker rm gnc_simulator
 ```
 
-### Check Container Status
+**Note: When you close the command prompt the docker container will automatically be stopped, so you dont have to run the above command every single time**
+
+
+#### Check Container Status
 ```bash
 docker ps -a
 ```
 
-### Check Container Size
+#### Check Container Size
 ```bash
 docker ps -s
-```
-
-### Remove Container (if needed)
-```bash
-docker rm gnc_simulator
-```
-
-### Clean Up Docker System
-```bash
-docker system prune -a
 ```
 
 ---

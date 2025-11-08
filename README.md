@@ -398,6 +398,8 @@ docker start gnc_simulator
 docker attach gnc_simulator
 ```
 
+After running the above command, to start the simulator and MATLAB follow the steps 10-12 in windows installation for windows users amd steps 7-9 in linux installation for linux users
+
 #### Stop the Container (if needed)
 
 **Use the following commands only when you need to stop and remove the docker container**

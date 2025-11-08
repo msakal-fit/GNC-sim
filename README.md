@@ -178,7 +178,7 @@ Select the drone model and the world file as per your choice.
    ```
    **Replace `your_username` with your actual Windows username.**
 
-3. Open MATLAB from the Ubuntu terminal using the following command (this method will add all the MATLAB files to the folder path automatically):
+3. Open MATLAB from the command prompt terminal using the following command (this method will add all the MATLAB files to the folder path automatically):
    ```bash
    matlab
    ```

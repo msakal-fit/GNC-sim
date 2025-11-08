@@ -384,7 +384,9 @@ This method will automatically add all the MATLAB files to the folder path.
 After the initial setup (or after closing the command prompt), use these commands to run the simulation:
 
 #### Step 1: Open Ubuntu terminal
-To open the ubuntu terminal, open the command prompt and then select ubuntu from the dropdown menu
+To open the ubuntu terminal, open the command prompt and then select ubuntu from the dropdown menu. 
+
+Make sure to open Docker app before running the following commands
 
 #### Step 2: Start the Container Again
 ```bash

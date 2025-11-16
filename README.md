@@ -178,7 +178,7 @@ Select the drone model and the world file as per your choice.
    ```
    **Replace `your_username` with your actual Windows username.**
 
-3. Open MATLAB from the Ubuntu terminal using the following command (this method will add all the MATLAB files to the folder path automatically):
+3. Open MATLAB from the command prompt terminal using the following command (this method will add all the MATLAB files to the folder path automatically):
    ```bash
    matlab
    ```
@@ -384,7 +384,9 @@ This method will automatically add all the MATLAB files to the folder path.
 After the initial setup (or after closing the command prompt), use these commands to run the simulation:
 
 #### Step 1: Open Ubuntu terminal
-To open the ubuntu terminal, open the command prompt and then select ubuntu from the dropdown menu
+To open the ubuntu terminal, open the command prompt and then select ubuntu from the dropdown menu. 
+
+Make sure to open Docker app before running the following commands
 
 #### Step 2: Start the Container Again
 ```bash
@@ -395,6 +397,8 @@ docker start gnc_simulator
 ```bash
 docker attach gnc_simulator
 ```
+
+After running the above command, to start the simulator and MATLAB follow the steps 10-12 in windows installation for windows users amd steps 7-9 in linux installation for linux users
 
 #### Stop the Container (if needed)
 

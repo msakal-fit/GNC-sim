@@ -1,6 +1,6 @@
 % filename: MATLAB/GNC_Algorithms/Control/run_P01_LQR.m
 
-function run_CONTROLLER_template()
+function run_P01_LQR()
 
     % Establish connection between MATLAB and simulator
     config = px4_get_config();

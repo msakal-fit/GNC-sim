@@ -19,7 +19,7 @@ function run_P04_LMPC()
     switch CONTROL_MODE
         case 'position'
             dt_dyn = 1/3;
-            flight_duration = 120;
+            flight_duration = 100;
         case 'attitude'
             dt_dyn = 1/250;
             flight_duration = 10;
@@ -30,7 +30,7 @@ function run_P04_LMPC()
     
     % TARGET/REFERENCE STATES
     x_target = [ ...
-        0; 0; 0; ...  % position
+        3; 0; -1; ...  % position
         0; 0; 0; ...  % velocity
         1; 0; 0; 0; ...  % quaternion
         0; 0; 0];  % body rates
@@ -44,7 +44,7 @@ function run_P04_LMPC()
     mpc.N = 10;     % prediction horizon (10 steps * 1/3 s = ~3.3s lookahead)
 
     % State and input weights
-    Q_pos  = 5.0 * eye(3);
+    Q_pos  = 10.0 * eye(3);
     Q_vel  = 1.0 * eye(3);
     Q_quat = 2.0 * eye(4);
     Q_omg  = 0.5 * eye(3);
@@ -87,7 +87,6 @@ function run_P04_LMPC()
     thrust_hover = m * g;
     dT_max   = 0.5 * thrust_hover;    % +/-50% of hover
     tau_max  = 3 ;
-    % * params.L_roll * 2 * params.T_max;
     mpc.u_min = [-dT_max; -tau_max; -tau_max; -tau_max];
     mpc.u_max = [ dT_max;  tau_max;  tau_max;  tau_max];
 
@@ -246,8 +245,11 @@ function run_P04_LMPC()
         end
     end
     
-    save_log_data(log_data, 'log_p04_lmpc_control.mat');
-    plot_P04_lmpc_results('log_p04_lmpc_control.mat');
+    save_log_data(log_data, 'log_p04_lmpc.mat');
+    plot_results_template('log_p04_lmpc.mat');
+
+    px4_send_trajectory(client, 0, 0, -5, 0, config);
+    pause(10);
 
     px4_initiate_landing(client, config);
     pause(5);

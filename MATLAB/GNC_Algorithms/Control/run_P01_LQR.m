@@ -181,8 +181,8 @@ function run_P01_LQR()
         end
     end
     
-    save_log_data(log_data, 'lqr_control_log.mat');
-    plot_P01_lqr_results('lqr_control_log.mat');
+    save_log_data(log_data, 'log_p01_lqr.mat');
+    plot_P01_lqr_results('log_p01_lqr.mat');
 
     px4_initiate_landing(client, config);
     pause(5);

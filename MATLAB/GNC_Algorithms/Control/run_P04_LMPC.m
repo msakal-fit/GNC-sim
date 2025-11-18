@@ -144,7 +144,7 @@ function run_P04_LMPC()
     fprintf('Starting LMPC point stabilization (position mode)...\n');
     t = 0;
     
-    u_prev = U_eq;
+    %u_prev = U_eq;
     
     while t < flight_duration
         loop_start = tic;
@@ -155,7 +155,7 @@ function run_P04_LMPC()
         % get current state vector
         x_curr = state_vec(telemetry);
         x_curr(7:10) = x_curr(7:10) / norm(x_curr(7:10));
-        
+
         
         % IMPLEMENT YOUR CONTROLLER HERE
         % 1) Compute the error state (relative to target)
@@ -173,6 +173,18 @@ function run_P04_LMPC()
         % Nonlinear dynamics integration
         dynamics_func = @(t, x) drone_nonlinear_dynamics(t, x, u_cmd, px4_config);
         x_next = RK4(dynamics_func, x_curr, dt_dyn, t);
+
+        % % 4) Use LMPC-predicted next error state
+        % if ~isempty(info_mpc.x_err_next)
+        %     x_err_next = info_mpc.x_err_next;
+        % else
+        %     % if something goes wrong
+        %     x_err_next = x_err;
+        % end
+
+        % % 5) Convert to absolute state and normalize quaternion
+        % x_next = x_target + x_err_next;
+        % x_next(7:10) = x_next(7:10) / norm(x_next(7:10));
         
         % Normalize the predicted quaternion
         x_next(7:10) = x_next(7:10) / norm(x_next(7:10));
@@ -211,6 +223,8 @@ function run_P04_LMPC()
                     t, x_curr(1), x_curr(2), x_curr(3), ...
                     x_err(1), x_err(2), x_err(3), norm(x_err(1:3)), ...
                     x_curr(4), x_curr(5), x_curr(6));
+
+            fprintf('LMPC x_next pos = [%.2f, %.2f, %.2f]\n', x_next(1), x_next(2), x_next(3));
             
             switch CONTROL_MODE
                 case 'attitude'
@@ -235,10 +249,7 @@ function run_P04_LMPC()
         % Logging and Timing
         log_data = update_log(log_data, t, x_curr, x_err, u_cmd);
         t = t + dt_dyn;
-        u_prev(1) = u_cmd(1);
-        u_prev(2) = u_cmd(2);
-        u_prev(3) = u_cmd(3);
-        u_prev(4) = u_cmd(4);
+        %u_prev = u_cmd;
         elapsed = toc(loop_start);
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);

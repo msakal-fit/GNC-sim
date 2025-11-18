@@ -8,13 +8,19 @@ px4_arm_drone(client, config);
 pause(2);
 
 % MODIFY TAKEOFF ALTITUDE, IF NEEDED.
-config.takeoff_altitude = -5.0;
+config.takeoff_altitude = -2.0;
 
 px4_takeoff(client, config);
 pause(10);
 
-px4_send_trajectory(client, 0, 0, -5, 0, config);
+% CONTROLLER SELECTION
+CONTROL_MODE = 'position';
 
+% switch to control mode
+px4_switch_control_mode(client, CONTROL_MODE, config);
+pause(2)
+
+px4_send_trajectory(client, 0, 0, -2, 0, config); % hover at (0, 0, -2), yaw = 0
 pause(10);
 
 px4_initiate_landing(client, config);

@@ -31,8 +31,8 @@ function run_P02_LQT()
     % TARGET/REFERENCE STATES
 
     % Trajectory configuration
-    refcfg.R = 2.0;  % meters
-    refcfg.V = 1.0;  % meters/second
+    refcfg.R = 4.0;  % meters
+    refcfg.V = 0.5;  % meters/second
     refcfg.center = [0; 0];  % circle center in XY plane
     refcfg.z0 = -2.0;  % initial altitude
 
@@ -43,11 +43,11 @@ function run_P02_LQT()
     %     0; 0; 0];  % body rates
 
     % WEIGHTS FOR YOUR CONTROLLER
-    Q = diag([50, 50, 10, ...  % position
-              1, 1, 1, ...     % velocity
-              10, 10, 100, 100, ... % quaternion
+    Q = diag([50, 50, 100, ...  % position
+              4, 4, 8, ...     % velocity
+              1, 1, 10, 10, ... % quaternion
               1, 1, 1]);       % body rates
-    R = diag([1, 1, 1, 1]);  % control
+    R = diag([5, 4, 4, 3]);  % control
     
     % FEEDFORWARD CONTROL INPUT
     m = px4_config.m; g = px4_config.g;

@@ -60,7 +60,7 @@ for k = 1:N_sim
     t = (k-1)*Ts;
 
     % --- 5.1 Call NMPC to get control ---
-    [u_cmd, aux] = p06_mpc_step(x, x_ref, nmpc); %#ok<NASGU>
+    [u_cmd, aux] = p06_mpc_step(x, x_ref, nmpc); % NMPC step
     u_hist(:,k)  = u_cmd;
 
     % --- 5.2 Propagate dynamics with RK4 ---

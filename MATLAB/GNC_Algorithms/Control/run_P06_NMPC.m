@@ -176,6 +176,9 @@ function run_P06_NMPC()
 
         % Logging and Timing
         log_data = update_log(log_data, t, x_curr, x_err, u_sat);
+        i_log = log_data.index - 1;
+        log_data.pred(:, i_log) = x_next;
+
         t = t + dt_dyn;
         elapsed = toc(loop_start);
         if elapsed < dt_dyn
@@ -183,12 +186,13 @@ function run_P06_NMPC()
         end
     end
     
-    % save_log_data(log_data, 'log_p01_lqr.mat');
-    % plot_P01_lqr_results('log_p01_lqr.mat');
+    save_log_data(log_data, 'log_p06_nmpc.mat');
+    plot_P06_nmpc_results('log_p06_nmpc.mat');
 
-    px4_initiate_landing(client, config);
-    pause(5);
-    px4_disarm_drone(client, config);
+    % px4_initiate_landing(client, config);
+    % pause(5);
+    % px4_disarm_drone(client, config);
+    reinitial_x500();
 
 end
 

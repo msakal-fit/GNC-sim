@@ -1,11 +1,11 @@
-% filename: MATLAB/GNC_Algorithms/Control/NMPC/run_P07_NMPC_offline.m
+% filename: MATLAB/GNC_Algorithms/Control/NMPC/test_P07_NMPC_offline.m
 %
 % Problem 7: Pure NMPC trajectory tracking (offline, no PX4)
 % Closed-loop: x_{k+1} = f_d(x_k, u_k), u_k from NMPC
 %
 % Outputs: plots for position vs reference, tracking error, and control inputs.
 
-function run_P07_NMPC_offline()
+function test_P07_NMPC_offline()
 
     % ---------------------------------------------------------------------
     % 1) Model / NMPC setup

@@ -48,7 +48,7 @@ function plot_P07_nmpc_offline_results(t_state, t_input, X_hist, X_ref_hist, U_h
     plot(t_state, px_ref, 'r--', 'LineWidth', 1.2); hold on;
     plot(t_state, px,     'b',   'LineWidth', 1.2);
     grid on; ylabel('x [m]');
-    legend('ref','act','Location','Best');
+    legend('reference','actual','Location','Best');
     title('Position Tracking');
 
     subplot(3,1,2);
@@ -86,7 +86,7 @@ function plot_P07_nmpc_offline_results(t_state, t_input, X_hist, X_ref_hist, U_h
 
     subplot(4,1,4);
     plot(t_state, e_norm, 'LineWidth', 1.2); grid on;
-    ylabel('||e|| [m]');
+    ylabel('abs|e| [m]');
     xlabel('time [s]');
 
     % ---------------------------------------------------------------------

@@ -1,4 +1,4 @@
-% filename: MATLAB/GNC_Algorithms/Control/plot_P01_lqr_results.m
+% filename: MATLAB/GNC_Algorithms/Control/plot_results_template.m
 
 function plot_results_template(matfile)
     S = load(matfile);

@@ -21,7 +21,7 @@ function [u_applied, aux] = p07_mpc_step(x_curr, Xref_hor, u_prev, nmpc)
 
     P(nx*(N+1)+1 : end) = u_prev;
 
-    % Initial guess for U (always hover)
+    % Initial guess for U (use hover)
     U_init_mat = repmat(Uref, 1, N);        % (4 x N)
     U_init     = reshape(U_init_mat, nu*N, 1);  % (4N x 1)
 

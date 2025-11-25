@@ -187,7 +187,7 @@ function run_P08a_point_multi()
     end
     
     save_log_data(log_data, 'log_p08a_nmpc.mat');
-    plot_P06_nmpc_results('log_p08a_nmpc.mat'); % use the same function with p06
+    plot_P06_nmpc_results('log_p08a_nmpc.mat'); % reuse the same function with p06
     % px4_initiate_landing(client, config);
     % pause(5);
     % px4_disarm_drone(client, config);

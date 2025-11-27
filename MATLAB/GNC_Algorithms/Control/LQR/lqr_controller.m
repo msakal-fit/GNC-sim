@@ -16,7 +16,7 @@ function [u, K, aux] = lqr_controller(x_curr, x_ref, params, Q, R)
     m = params.m;
     g = params.g;
 
-    % --- Feedforward hover input
+    % --- hover input
     U_eq = [m * g; 0; 0; 0];
 
     % --- normalize quaternion

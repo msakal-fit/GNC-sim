@@ -19,7 +19,7 @@ function run_P01_LQR()
     switch CONTROL_MODE
         case 'position'
             dt_dyn = 1/3;
-            flight_duration = 120;
+            flight_duration = 60;
         case 'attitude'
             dt_dyn = 1/250;
             flight_duration = 10;
@@ -30,17 +30,19 @@ function run_P01_LQR()
     
     % TARGET/REFERENCE STATES
     x_target = [ ...
-        0; 0; 0; ...  % position
+        0; 0; -1; ...  % position
         0; 0; 0; ...  % velocity
         1; 0; 0; 0; ...  % quaternion
         0; 0; 0];  % body rates
 
     % WEIGHTS FOR YOUR CONTROLLER
-    Q = diag([10, 10, 10, ...  % position
-              1, 1, 1, ...     % velocity
-              100, 100, 100, 100, ... % quaternion
-              1, 1, 1]);       % body rates
-    R = diag([1, 1, 1, 1]);  % control
+    Q_pos = diag([  5,  5, 40 ]);
+    Q_vel = diag([  2,  2,  12 ]);
+    Q_q   = diag([ 40, 20, 20, 20 ]);
+    Q_omega  = diag([  2,  2,  2 ]);
+    Q = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
+
+    R = diag([ 2,  1,  1,  1 ]);
     
     % FEEDFORWARD CONTROL INPUT
     m = px4_config.m; g = px4_config.g;
@@ -76,12 +78,17 @@ function run_P01_LQR()
     
     fprintf('Starting manual control...\n');
     log_data = initialize_logging();
+    
+    log_data.x_ref = x_target;
 
      % simulation loop
     fprintf('Starting the simulation...\n');
     t = 0;
-    
-    u_prev = U_eq;
+
+    x_eq = x_target;
+    U_eq = [m*g; 0; 0; 0];
+    [A_eq, B_eq] = drone_linear_dynamics(x_eq, U_eq, px4_config);
+    K = lqr(A_eq, B_eq, Q, R);
     
     while t < flight_duration
         loop_start = tic;
@@ -89,19 +96,22 @@ function run_P01_LQR()
         % get telemetry data
         telemetry = px4_get_telemetry(client, config);
         
-        % get current state vector
-        x_curr = state_vec(telemetry);
-
-        x_curr(7:10) = x_curr(7:10) / norm(x_curr(7:10));
-        
         % IMPLEMENT YOUR CONTROLLER HERE
-
         % --- LQR block ---
-        % with current state: x_curr
-        % compute the LQR around current state
-        [u_lqr, K, aux] = lqr_controller(x_curr, x_target, px4_config, Q, R);
+        % get current state vector
+        % x_curr = state_vec(telemetry);
+        % x_curr(7:10) = x_curr(7:10) / norm(x_curr(7:10));
+
+        % % with current state: x_curr
+        % % compute the LQR around current state
+        % [u_lqr, K, aux] = lqr_controller(x_curr, x_target, px4_config, Q, R);
         
-        x_err = aux.x_err;
+        % x_err = x_curr - x_target;
+
+        x_curr = state_vec(telemetry);
+        x_curr(7:10) = x_curr(7:10)/norm(x_curr(7:10));
+        x_err  = x_curr - x_eq;
+        u_lqr  = U_eq - K*x_err;
         
         % saturate the control inputs
         u_lqr_sat = saturate_control(u_lqr, px4_config);
@@ -171,10 +181,7 @@ function run_P01_LQR()
         % Logging and Timing
         log_data = update_log(log_data, t, x_curr, x_err, u_lqr_sat);
         t = t + dt_dyn;
-        u_prev(1) = u_lqr_sat(1);
-        u_prev(2) = u_lqr_sat(2);
-        u_prev(3) = u_lqr_sat(3);
-        u_prev(4) = u_lqr_sat(4);
+
         elapsed = toc(loop_start);
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);
@@ -182,11 +189,9 @@ function run_P01_LQR()
     end
     
     save_log_data(log_data, 'log_p01_lqr.mat');
-    plot_P01_lqr_results('log_p01_lqr.mat');
+    plot_point_stab_results('log_p01_lqr.mat', ' P01 - LQR');
 
-    px4_initiate_landing(client, config);
-    pause(5);
-    px4_disarm_drone(client, config);
+    reinitial_x500();
 end
 
 function [q_desired, roll_des, pitch_des, yaw_des, angle_limited] = saturate_attitude(x_next, max_tilt_angle)

@@ -9,6 +9,8 @@ function plot_P01_lqr_results(matfile)
     E = L.error;
     U = L.control;
 
+    close all; % close previous figures
+
     figure; tiledlayout(3,1,'Padding','compact');
     nexttile; plot(t, X(1:3,:)); grid on; ylabel('pos [m]'); legend x y z;
     nexttile; plot(t, X(4:6,:)); grid on; ylabel('vel [m/s]'); legend vx vy vz;

@@ -13,7 +13,7 @@ function reinitial_x500()
     config.takeoff_altitude = -2.0;
 
     px4_takeoff(client, config);
-    pause(10);
+    pause(7);
 
     % CONTROLLER SELECTION
     CONTROL_MODE = 'position';
@@ -23,7 +23,7 @@ function reinitial_x500()
     pause(2)
 
     px4_send_trajectory(client, 0, 0, -2, 0, config); % hover at (0, 0, -2), yaw = 0
-    pause(10);
+    pause(7);
 
     px4_initiate_landing(client, config);
     pause(5);

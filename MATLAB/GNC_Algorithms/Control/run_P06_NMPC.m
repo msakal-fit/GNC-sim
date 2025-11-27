@@ -19,7 +19,7 @@ function run_P06_NMPC()
     switch CONTROL_MODE
         case 'position'
             dt_dyn = 1/3;
-            flight_duration = 120;
+            flight_duration = 60;
         case 'attitude'
             dt_dyn = 1/250;
             flight_duration = 10;
@@ -30,12 +30,18 @@ function run_P06_NMPC()
 
     Ts = dt_dyn;
 
-    N_horizon = 15;                       % prediction horizon length
+    N_horizon = 25;                       % prediction horizon length
+    fprintf('Setting up NMPC with Ts=%.3f s and N=%d\n', Ts, N_horizon);
+
+    % time horizon in seconds
+    time_horizon = Ts * N_horizon;
+    fprintf('Time horizon: %.3f seconds\n', time_horizon);
+
     nmpc = p06_setup_mpc(px4_config, Ts, N_horizon);
     
     % TARGET/REFERENCE STATES
     x_ref = [ ...
-        0; 2; -2; ...  % position
+        0; 0; -1; ...  % position
         0; 0; 0; ...  % velocity
         1; 0; 0; 0; ...  % quaternion
         0; 0; 0];  % body rates
@@ -80,12 +86,11 @@ function run_P06_NMPC()
     
     fprintf('Starting manual control...\n');
     log_data = initialize_logging();
+    log_data.x_ref = x_ref;
 
      % simulation loop
-    fprintf('Starting the NMPC simulation...\n');
+    fprintf('Starting the NMPC-Point Stabilization simulation...\n');
     t = 0;
-    
-    u_prev = U_eq;
     
     while t < flight_duration
         loop_start = tic;
@@ -99,15 +104,14 @@ function run_P06_NMPC()
         x_curr(7:10) = x_curr(7:10) / norm(x_curr(7:10));
         
         % IMPLEMENT YOUR CONTROLLER HERE
-        % state error
-        x_err = x_curr - x_ref;
 
         % --- NMPC block ---
+        % state error
+        x_err = x_curr - x_ref;
         % with current state: x_curr
         % compute the LQR around current state
         % Given x_curr and x_ref, compute optimal control u_nmpc
         [u_nmpc, aux_nmpc] = p06_mpc_step(x_curr, x_ref, nmpc);
-
         
         % saturate the control inputs
         u_sat = saturate_control(u_nmpc, px4_config);
@@ -187,7 +191,7 @@ function run_P06_NMPC()
     end
     
     save_log_data(log_data, 'log_p06_nmpc.mat');
-    plot_P06_nmpc_results('log_p06_nmpc.mat');
+    plot_point_stab_results('log_p06_nmpc.mat', ' P06 - NMPC');
 
     % px4_initiate_landing(client, config);
     % pause(5);

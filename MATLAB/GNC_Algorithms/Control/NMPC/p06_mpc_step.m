@@ -2,8 +2,6 @@
 
 function [u_applied, aux] = p06_mpc_step(x_curr, x_ref, nmpc)
 
-    %import casadi.*
-
     x_curr = x_curr(:);
     x_ref  = x_ref(:);
 
@@ -16,7 +14,6 @@ function [u_applied, aux] = p06_mpc_step(x_curr, x_ref, nmpc)
     % Initial guess for U (always hover)
     U_init_mat = repmat(Uref, 1, N);        % (4 x N)
     U_init     = reshape(U_init_mat, nu*N, 1);  % (4N x 1)
-    
 
 
     % call NMPC solver

@@ -89,16 +89,16 @@ function nmpc = p06_setup_mpc(px4_config, Ts, N)
 
     % Setup cost function weights
     % [ px py pz  vx vy vz  q0 q1 q2 q3  p q r ]
-    Q_pos = diag([  50,   50,  50]);
-    Q_vel = diag([  2,   2,   2]);
-    Q_q   = diag([ 20,  20,  20, 20]);
-    Q_om  = diag([  2,   2,   2]);
+    Q_pos = diag([  5,  5, 40 ]);
+    Q_vel = diag([  2,  2,  12 ]);
+    Q_q   = diag([ 40, 20, 20, 20 ]);
+    Q_omega  = diag([  2,  2,  2 ]);
 
-    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_om);
+    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
     Qf = Q; % terminal weigth = state weight
 
     % Input weight
-    R = diag([ 0.3,  0.1,  0.1,  0.1 ]);
+    R = diag([ 2,  1,  1,  1 ]);
 
     % Hover input
     U_ref = [T_hover; 0; 0; 0];
@@ -113,7 +113,6 @@ function nmpc = p06_setup_mpc(px4_config, Ts, N)
 
     x0_sym   = P(1:n_states);
     xref_sym = P(n_states+1:end);
-
 
 
     Xk  = x0_sym;   % current predicted state

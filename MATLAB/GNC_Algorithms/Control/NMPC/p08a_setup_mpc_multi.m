@@ -1,8 +1,8 @@
-% filename: MATLAB/GNC_Algorithms/Control/NMPC/p08_setup_mpc_multi.m
+% filename: MATLAB/GNC_Algorithms/Control/NMPC/p08a_setup_mpc_multi.m
 %
 % NMPC with multiple shooting
 
-function nmpc = p08_setup_mpc_multi(px4_config, Ts, N)
+function nmpc = p08a_setup_mpc_multi(px4_config, Ts, N)
 
     % add path
     addpath('/home/msakal2024@fit.edu/TKRM/GNC-sim/casadi-3.7.2-linux64-matlab2018b');

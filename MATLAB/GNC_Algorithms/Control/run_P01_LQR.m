@@ -29,7 +29,7 @@ function run_P01_LQR()
     end
     
     % TARGET/REFERENCE STATES
-    x_target = [ ...
+    x_ref = [ ...
         0; 0; -1; ...  % position
         0; 0; 0; ...  % velocity
         1; 0; 0; 0; ...  % quaternion
@@ -49,7 +49,7 @@ function run_P01_LQR()
     U_eq = [m * g; 0; 0; 0];
 
     
-    fprintf('Starting LQR Simulation...\n');
+    fprintf('Starting simulation...\n');
     fprintf('Control mode: %s\n', CONTROL_MODE);
 
     % arm the drone for manual control
@@ -79,13 +79,13 @@ function run_P01_LQR()
     fprintf('Starting manual control...\n');
     log_data = initialize_logging();
     
-    log_data.x_ref = x_target;
+    log_data.x_ref = x_ref;
 
      % simulation loop
-    fprintf('Starting the simulation...\n');
+    fprintf('Starting the LQR simulation...\n');
     t = 0;
 
-    x_eq = x_target;
+    x_eq = x_ref;
     U_eq = [m*g; 0; 0; 0];
     [A_eq, B_eq] = drone_linear_dynamics(x_eq, U_eq, px4_config);
     K = lqr(A_eq, B_eq, Q, R);
@@ -104,9 +104,9 @@ function run_P01_LQR()
 
         % % with current state: x_curr
         % % compute the LQR around current state
-        % [u_lqr, K, aux] = lqr_controller(x_curr, x_target, px4_config, Q, R);
+        % [u_lqr, K, aux] = lqr_controller(x_curr, x_ref, px4_config, Q, R);
         
-        % x_err = x_curr - x_target;
+        % x_err = x_curr - x_ref;
 
         x_curr = state_vec(telemetry);
         x_curr(7:10) = x_curr(7:10)/norm(x_curr(7:10));

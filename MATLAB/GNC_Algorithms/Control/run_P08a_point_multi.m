@@ -19,7 +19,7 @@ function run_P08a_point_multi()
     switch CONTROL_MODE
         case 'position'
             dt_dyn = 1/3;
-            flight_duration = 120;
+            flight_duration = 60;
         case 'attitude'
             dt_dyn = 1/250;
             flight_duration = 10;
@@ -30,12 +30,18 @@ function run_P08a_point_multi()
 
     Ts = dt_dyn;
 
-    N_horizon = 15;                       % prediction horizon length
-    nmpc = p08_setup_mpc_multi(px4_config, Ts, N_horizon);
+    N_horizon = 25;                       % prediction horizon length
+    fprintf('Setting up NMPC with Ts=%.3f s and N=%d\n', Ts, N_horizon);
+
+    % time horizon in seconds
+    time_horizon = Ts * N_horizon;
+    fprintf('Time horizon: %.3f seconds\n', time_horizon);
+
+    nmpc = p08a_setup_mpc_multi(px4_config, Ts, N_horizon);
     
     % TARGET/REFERENCE STATES
     x_ref = [ ...
-        0; 2; -2; ...  % position
+        0; 0; -1; ...  % position
         0; 0; 0; ...  % velocity
         1; 0; 0; 0; ...  % quaternion
         0; 0; 0];  % body rates
@@ -45,7 +51,6 @@ function run_P08a_point_multi()
     x(1:3)   = [0; 0; 0];
     x(7)     = 1.0;
     x(8:10)  = 0.0;
-
     
     % FEEDFORWARD CONTROL INPUT
     m = px4_config.m; g = px4_config.g;
@@ -80,12 +85,11 @@ function run_P08a_point_multi()
     
     fprintf('Starting manual control...\n');
     log_data = initialize_logging();
+    log_data.x_ref = x_ref;
 
      % simulation loop
-    fprintf('Starting the NMPC simulation...\n');
+    fprintf('Starting the NMPC Point Stab. Multi simulation...\n');
     t = 0;
-    
-    u_prev = U_eq;
     
     while t < flight_duration
         loop_start = tic;
@@ -187,7 +191,9 @@ function run_P08a_point_multi()
     end
     
     save_log_data(log_data, 'log_p08a_nmpc.mat');
-    plot_P06_nmpc_results('log_p08a_nmpc.mat'); % reuse the same function with p06
+    plot_point_stab_results('log_p08a_nmpc.mat', ' P08a - NMPC Multi-Shooting');
+    
+    %plot_P06_nmpc_results('log_p08a_nmpc.mat'); % reuse the same function with p06
     % px4_initiate_landing(client, config);
     % pause(5);
     % px4_disarm_drone(client, config);

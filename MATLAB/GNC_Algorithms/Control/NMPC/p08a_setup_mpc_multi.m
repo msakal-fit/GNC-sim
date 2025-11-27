@@ -100,16 +100,16 @@ function nmpc = p08a_setup_mpc_multi(px4_config, Ts, N)
 
 
     % setup cost function
-    Q_pos = diag([ 200, 200, 50 ]);
-    Q_vel = diag([ 2,  2,  2  ]);
-    Q_q   = diag([ 20, 20, 20, 20 ]);
-    Q_om  = diag([ 2,  2,  2 ]);
+    Q_pos = diag([  5,  5, 40 ]);
+    Q_vel = diag([  2,  2,  12 ]);
+    Q_q   = diag([ 40, 20, 20, 20 ]);
+    Q_omega  = diag([  2,  2,  2 ]);
 
-    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_om);
-    Qf = Q;    % terminal weight
+    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
+    Qf = Q; % terminal weigth = state weight
 
     % Input weight
-    R = diag([ 0.3, 0.1, 0.1, 0.1 ]);
+    R = diag([ 2,  1,  1,  1 ]);
 
     % Hover input
     U_ref = [T_hover; 0; 0; 0];

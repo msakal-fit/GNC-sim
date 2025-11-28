@@ -202,7 +202,7 @@ function run_P06_NMPC()
     % px4_initiate_landing(client, config);
     % pause(5);
     % px4_disarm_drone(client, config);
-    reinitial_x500();
+    reinitial_x500("point");
 
 end
 

@@ -196,7 +196,7 @@ function run_P01_LQR()
     save_log_data(log_data, 'log_p01_lqr.mat');
     plot_point_stab_results('log_p01_lqr.mat', ' P01 - LQR');
 
-    reinitial_x500();
+    reinitial_x500("point");
 end
 
 function [q_desired, roll_des, pitch_des, yaw_des, angle_limited] = saturate_attitude(x_next, max_tilt_angle)

@@ -1,4 +1,4 @@
-function reinitial_x500()
+function reinitial_x500(flight_mode)
     % Reinitializes the X500 drone to a known state.
     config = px4_get_config();
     client = px4_connect(config.ip_address, config.port);
@@ -23,7 +23,12 @@ function reinitial_x500()
     pause(2)
 
     px4_send_trajectory(client, 0, 0, -2, 0, config); % hover at (0, 0, -2), yaw = 0
-    pause(7);
+    
+    if flight_mode == "point"
+        pause(10);
+    elseif flight_mode == "tracking"
+        pause(60);
+    end
 
     px4_initiate_landing(client, config);
     pause(5);

@@ -78,8 +78,6 @@ function run_P01_LQR()
     
     fprintf('Starting manual control...\n');
     log_data = initialize_logging();
-    
-    log_data.x_ref = x_ref;
 
      % simulation loop
     fprintf('Starting the LQR simulation...\n');
@@ -192,6 +190,8 @@ function run_P01_LQR()
             pause(dt_dyn - elapsed);
         end
     end
+
+    log_data.x_ref = x_ref;
     
     save_log_data(log_data, 'log_p01_lqr.mat');
     plot_point_stab_results('log_p01_lqr.mat', ' P01 - LQR');

@@ -85,7 +85,6 @@ function run_P08a_point_multi()
     
     fprintf('Starting manual control...\n');
     log_data = initialize_logging();
-    log_data.x_ref = x_ref;
 
      % simulation loop
     fprintf('Starting the NMPC Point Stab. Multi simulation...\n');
@@ -185,10 +184,17 @@ function run_P08a_point_multi()
 
         t = t + dt_dyn;
         elapsed = toc(loop_start);
+
+        % Store CPU time per control step
+        i = log_data.index - 1;           % last written sample
+        log_data.step_time(i) = elapsed;  % seconds
+
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);
         end
     end
+
+    log_data.x_ref = x_ref;
     
     save_log_data(log_data, 'log_p08a_nmpc.mat');
     plot_point_stab_results('log_p08a_nmpc.mat', ' P08a - NMPC Multi-Shooting');

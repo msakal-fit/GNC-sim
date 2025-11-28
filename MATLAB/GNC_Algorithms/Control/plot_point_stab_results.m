@@ -19,8 +19,8 @@ function plot_point_stab_results(matfile, method_name)
     fig_height = 600;
 
     % 1) States
-    fig1 = figure;
-    set(fig1, 'Units','pixels', 'Position',[100 100 fig_width fig_height]);
+    fig_states = figure;
+    set(fig_states, 'Units','pixels', 'Position',[100 100 fig_width fig_height]);
 
     % Position + reference
     subplot(3,1,1);
@@ -58,9 +58,54 @@ function plot_point_stab_results(matfile, method_name)
     xlabel('t [s]');
     legend('p','q','r','Location','best');
 
+    % Extract quaternion components from state
+    q0 = X(7,:);
+    q1 = X(8,:);
+    q2 = X(9,:);
+    q3 = X(10,:);
 
-    fig2 = figure;
-    set(fig2, 'Units','pixels', 'Position',[150 150 fig_width fig_height]);
+    N = length(t);
+    eul = zeros(N,3);   % [yaw, pitch, roll] for each time step
+
+    for k = 1:N
+        qk = [q0(k) q1(k) q2(k) q3(k)];
+        qk = qk / norm(qk);                 % safety normalization
+        eul(k,:) = quat2eul(qk, 'ZYX');     % [yaw, pitch, roll]
+    end
+
+    roll  = eul(:,3);
+    pitch = eul(:,2);
+    yaw   = eul(:,1);
+
+    fig_att = figure;
+    set(fig_att, 'Units','pixels', 'Position',[130 130 fig_width fig_height]);
+
+    % Quaternion components
+    subplot(2,1,1);
+    plot(t, q0, 'LineWidth', 1.8); hold on;
+    plot(t, q1, 'LineWidth', 1.8);
+    plot(t, q2, 'LineWidth', 1.8);
+    plot(t, q3, 'LineWidth', 1.8);
+    hold off;
+    grid on;
+    ylabel('q');
+    legend('q_0','q_1','q_2','q_3','Location','best');
+    title(['Attitude (Quaternion + Euler) - ', method_name]);
+
+    % Euler angles in degrees (more intuitive for the reader)
+    subplot(2,1,2);
+    plot(t, rad2deg(roll),  'LineWidth', 1.8); hold on;
+    plot(t, rad2deg(pitch), 'LineWidth', 1.8);
+    plot(t, rad2deg(yaw),   'LineWidth', 1.8);
+    hold off;
+    grid on;
+    xlabel('t [s]');
+    ylabel('angle [deg]');
+    legend('roll','pitch','yaw','Location','best');
+
+
+    fig_err = figure;
+    set(fig_err, 'Units','pixels', 'Position',[150 150 fig_width fig_height]);
 
     % Position error
     subplot(3,1,1);
@@ -97,8 +142,8 @@ function plot_point_stab_results(matfile, method_name)
 
     % Control inputs
 
-    fig3 = figure;
-    set(fig3, 'Units','pixels', 'Position',[200 200 fig_width fig_height]);
+    fig_ctrl = figure;
+    set(fig_ctrl, 'Units','pixels', 'Position',[200 200 fig_width fig_height]);
 
     % Thrust
     subplot(2,1,1);
@@ -133,12 +178,47 @@ function plot_point_stab_results(matfile, method_name)
     % Max norm
     max_norm = max(err_norm);                    % scalar
 
-    fprintf('\n=== Position Error Metrics (%s) ===\n', method_name);
+    % u_norm is the Euclidean norm of the control vector at each step
+    u_norm      = sqrt(sum(U.^2, 1));              % 1 x N
+    avg_u_norm  = mean(u_norm);
+    max_u_norm  = max(u_norm);
+
+    % Average thrust and average torque norm
+    avg_T          = mean(U(1,:));
+    tau_norm       = sqrt(sum(U(2:4,:).^2, 1));    % 1 x N
+    avg_tau_norm   = mean(tau_norm);
+    max_tau_norm   = max(tau_norm);
+
+    % --- CPU time per step (if available) ---
+    has_cpu = isfield(L, 'step_time');
+    if has_cpu
+        dt_step   = L.step_time(:);
+        avg_dt    = mean(dt_step);
+        max_dt    = max(dt_step);
+    end
+
+    % --- Print metrics to command window ---
+    fprintf('\n=== Metrics (%s) ===\n', method_name);
     fprintf('RMSE [ex, ey, ez] = [%.3f, %.3f, %.3f] m\n', ...
             rmse_pos(1), rmse_pos(2), rmse_pos(3));
     fprintf('RMSE of norm(e)       = %.3f m\n', rmse_norm);
     fprintf('Max err [ex, ey, ez] = [%.3f, %.3f, %.3f] m\n', ...
             max_abs_pos_err(1), max_abs_pos_err(2), max_abs_pos_err(3));
     fprintf('Max of norm(e)        = %.3f m\n\n', max_norm);
+
+    fprintf('Average control effort  mean of (u)   = %.3f\n', avg_u_norm);
+    fprintf('Max control effort      max(u)    = %.3f\n', max_u_norm);
+    fprintf('Average thrust          mean(T)       = %.3f N\n', avg_T);
+    fprintf('Average torque norm     mean(tau) = %.3f Nm\n', avg_tau_norm);
+    fprintf('Max torque norm         max(tau)  = %.3f Nm\n', max_tau_norm);
+
+    if has_cpu
+        fprintf('Average CPU time per step  = %.4f s\n', avg_dt);
+        fprintf('Max CPU time per step      = %.4f s\n', max_dt);
+    else
+        fprintf('CPU time per step          = (not logged in this run)\n');
+    end
+
+    fprintf('======================================\n\n');
 
 end

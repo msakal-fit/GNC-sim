@@ -183,6 +183,11 @@ function run_P01_LQR()
         t = t + dt_dyn;
 
         elapsed = toc(loop_start);
+
+        % Store CPU time per control step
+        i = log_data.index - 1;           % last written sample
+        log_data.step_time(i) = elapsed;  % seconds
+
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);
         end

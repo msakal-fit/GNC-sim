@@ -19,7 +19,7 @@ function run_P02_LQT()
     switch CONTROL_MODE
         case 'position'
             dt_dyn = 1/3;
-            flight_duration = 60;
+            flight_duration = 30;
         case 'attitude'
             dt_dyn = 1/250;
             flight_duration = 10;
@@ -31,10 +31,17 @@ function run_P02_LQT()
     % TARGET/REFERENCE STATES
 
     % Trajectory configuration
-    refcfg.R = 4.0;  % meters
-    refcfg.V = 0.5;  % meters/second
-    refcfg.center = [0; 0];  % circle center in XY plane
-    refcfg.z0 = -2.0;  % initial altitude
+    % refcfg.R = 4.0;  % meters
+    % refcfg.V = 0.5;  % meters/second
+    % refcfg.center = [0; 0];  % circle center in XY plane
+    % refcfg.z0 = -2.0;  % initial altitude
+
+    refcfg.z0 = config.takeoff_altitude;  % constant altitude for line traj
+
+    % Trajectory configuration for straight line
+    refcfg.p0  = [0; 0; refcfg.z0];   % start at (0,0,z0)
+    refcfg.v   = [0.1; 0; 0];         % 0.5 m/s along +x
+    refcfg.yaw = 0;                   % face +x
 
     % x_target = [ ...
     %     0; 0; 0; ...  % position
@@ -43,11 +50,11 @@ function run_P02_LQT()
     %     0; 0; 0];  % body rates
 
     % WEIGHTS FOR YOUR CONTROLLER
-    Q = diag([50, 50, 100, ...  % position
-              4, 4, 8, ...     % velocity
-              1, 1, 10, 10, ... % quaternion
+    Q = diag([50, 50, 50, ...  % position
+              1, 1, 1, ...     % velocity
+              40, 40, 40, 40, ... % quaternion
               1, 1, 1]);       % body rates
-    R = diag([5, 4, 4, 3]);  % control
+    R = diag([1, 1, 1, 1]);  % control
     
     % FEEDFORWARD CONTROL INPUT
     m = px4_config.m; g = px4_config.g;
@@ -87,10 +94,14 @@ function run_P02_LQT()
     log_data = initialize_logging();
 
      % simulation loop
-    fprintf('Starting the simulation...\n');
+    fprintf('Starting the LQT simulation...\n');
     t = 0;
     
-    u_prev = U_eq;
+    x_eq       = zeros(13,1);
+    x_eq(7)    = 1;        % q = [1 0 0 0]^T
+    U_eq = [m*g; 0; 0; 0];
+    [A_eq, B_eq] = drone_linear_dynamics(x_eq, U_eq, px4_config);
+    K = lqr(A_eq, B_eq, Q, R);
     
     while t < flight_duration
         loop_start = tic;
@@ -98,21 +109,21 @@ function run_P02_LQT()
         % get telemetry data
         telemetry = px4_get_telemetry(client, config);
         
+        % IMPLEMENT YOUR CONTROLLER HERE
+        % --- LQR block ---
         % get current state vector
         x_curr = state_vec(telemetry);
-
         x_curr(7:10) = x_curr(7:10) / norm(x_curr(7:10));
-        
-        % IMPLEMENT YOUR CONTROLLER HERE
-
-        xref = traj_circle(t, refcfg);
-
-        % --- LQR block ---
         % with current state: x_curr
         % compute the LQR around current state
-        [u_lqr, K, aux] = lqr_controller(x_curr, xref, px4_config, Q, R);
+        % [u_lqr, K, aux] = lqr_controller(x_curr, xref, px4_config, Q, R);
         
-        x_err = aux.x_err;
+        % x_err = aux.x_err;
+        % xref = traj_circle(t, refcfg);
+        xref = traj_line(t, refcfg);
+
+        x_err = x_curr - xref;
+        u_lqr = U_eq - K * x_err;
         
         % saturate the control inputs
         u_sat = saturate_control(u_lqr, px4_config);
@@ -183,16 +194,12 @@ function run_P02_LQT()
 
         % Logging and Timing
         % --- Log ref ---
-        log_data = update_log(log_data, t, x_curr, x_curr - xref, u_prev);  % or u_sat if you keep it
+        log_data = update_log(log_data, t, x_curr, x_curr - xref, u_sat);  % or u_sat if you keep it
         if ~isfield(log_data,'ref'), log_data.ref = []; end
         log_data.ref(:, end+1) = xref;
 
         
         t = t + dt_dyn;
-        u_prev(1) = u_sat(1);
-        u_prev(2) = u_sat(2);
-        u_prev(3) = u_sat(3);
-        u_prev(4) = u_sat(4);
         elapsed = toc(loop_start);
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);
@@ -202,12 +209,14 @@ function run_P02_LQT()
     save_log_data(log_data, 'log_p02_lqt.mat');
     plot_P02_lqt_results('log_p02_lqt.mat');
 
-    px4_send_trajectory(client, 0, 0, -5, 0, config);
-    pause(10);
+    reinitial_x500("tracking");
 
-    px4_initiate_landing(client, config);
-    pause(5);
-    px4_disarm_drone(client, config);
+    % px4_send_trajectory(client, 0, 0, -5, 0, config);
+    % pause(10);
+
+    % px4_initiate_landing(client, config);
+    % pause(5);
+    % px4_disarm_drone(client, config);
 end
 
 function [q_desired, roll_des, pitch_des, yaw_des, angle_limited] = saturate_attitude(x_next, max_tilt_angle)

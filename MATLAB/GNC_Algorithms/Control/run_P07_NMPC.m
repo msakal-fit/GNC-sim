@@ -232,9 +232,10 @@ function run_P07_NMPC()
     %plot_P07_nmpc_results('log_p07_nmpc.mat');
     plot_tracking_results('log_p07_nmpc.mat', 'P07 - NMPC Single Shooting');
 
-    px4_initiate_landing(client, config);
-    pause(5);
-    px4_disarm_drone(client, config);
+    % px4_initiate_landing(client, config);
+    % pause(5);
+    % px4_disarm_drone(client, config);
+    reinitial_x500("tracking");
 
 end
 

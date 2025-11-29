@@ -49,12 +49,23 @@ function run_P02_LQT()
     %     1; 0; 0; 0; ...  % quaternion
     %     0; 0; 0];  % body rates
 
-    % WEIGHTS FOR YOUR CONTROLLER
-    Q = diag([50, 50, 50, ...  % position
-              1, 1, 1, ...     % velocity
-              40, 40, 40, 40, ... % quaternion
-              1, 1, 1]);       % body rates
-    R = diag([1, 1, 1, 1]);  % control
+    % WEIGHTS 
+    Q_pos = diag([  50,  5, 5 ]);
+    Q_vel = diag([  12,  2,  2 ]);
+    Q_q   = diag([ 20, 20, 20, 20 ]);
+    Q_omega  = diag([  2,  2,  2 ]);
+    Q = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
+
+    R = diag([ 2,  1,  1,  1 ]);
+
+    % print weights for logging purposes
+    disp('State weight matrix Q as diag:');
+    disp(Q_pos);
+    disp(Q_vel);
+    disp(Q_q);
+    disp(Q_omega);
+    disp('Input weight matrix R as diag:');
+    disp(R);
     
     % FEEDFORWARD CONTROL INPUT
     m = px4_config.m; g = px4_config.g;
@@ -144,7 +155,7 @@ function run_P02_LQT()
         switch CONTROL_MODE
             case 'position'
                 px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
-                yaw_ref = atan2(xref(5), xref(4));
+                %yaw_ref = atan2(xref(5), xref(4));
                 %px4_send_trajectory(client, xref(1), xref(2), xref(3), yaw_ref, config);
             case 'attitude'
                 [q_desired, roll_des, pitch_des, yaw_des, angle_limited] = saturate_attitude(x_next, deg2rad(15));
@@ -213,7 +224,7 @@ function run_P02_LQT()
     
     save_log_data(log_data, 'log_p02_lqt.mat');
     %plot_P02_lqt_results('log_p02_lqt.mat');
-    plot_tracking_results('log_p02_lqt.mat', 'LQT Controller');
+    plot_tracking_results('log_p02_lqt.mat', 'P02 - LQT');
 
     reinitial_x500("tracking");
 

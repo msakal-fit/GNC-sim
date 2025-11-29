@@ -17,7 +17,7 @@ function run_P08b_traj_multi()
 
     % parameters
     dt_dyn = 1/3;
-    flight_duration = 20;
+    flight_duration = 60;
     Ts = dt_dyn;
 
     N_horizon = 15;                       % prediction horizon length
@@ -88,9 +88,11 @@ function run_P08b_traj_multi()
     
     fprintf('Starting NMPC tracking control...\n');
     log_data = initialize_logging();
+    log_data.N_horizon   = N_horizon;
+    log_data.k_lookahead = k_lookahead;
 
      % simulation loop
-    fprintf('Starting the NMPC simulation...\n');
+    fprintf('Starting the P08b - NMPC Tracking (Multi Shooting) simulation...\n');
     t = 0;
     
     u_prev = U_eq;

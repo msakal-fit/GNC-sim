@@ -1,8 +1,8 @@
-% filename: MATLAB/GNC_Algorithms/Control/NMPC/p08b_setup_mpc_multi_tracj.m
+% filename: MATLAB/GNC_Algorithms/Control/NMPC/p08b_setup_mpc_multi_tracj_obs.m
 %
 % NMPC with multiple shooting
 
-function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
+function nmpc = p08b_setup_mpc_multi_tracj_obs(px4_config, Ts, N)
     % add path
     addpath('/home/msakal2024@fit.edu/TKRM/GNC-sim/casadi-3.7.2-linux64-matlab2018b');
     import casadi.*
@@ -98,10 +98,10 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
 
 
     % setup cost function
-    Q_pos = diag([ 200, 200, 50 ]);
+    Q_pos = diag([ 200, 200, 10 ]);
     Q_vel = diag([ 2,  2,  2  ]);
-    Q_q   = diag([ 20, 20, 20, 20 ]);
-    Q_om  = diag([ 2,  2,  2 ]);
+    Q_q   = diag([ 10, 10, 10, 10 ]);
+    Q_om  = diag([ 1,  1,  1 ]);
 
     Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_om);
     Qf = Q;    % terminal weight
@@ -112,11 +112,10 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
     % Hover input
     U_ref = [T_hover; 0; 0; 0];
 
-
     % add obstacle setup
-    obs_center = [5.0; 0.0]; % 2D position (x,y)
+    obs_center_3d = [8.0; 0.0; -5.0]; 
 
-    obs_radius = 1.0;        % radius
+    obs_radius = 0.25;        % radius
 
     % min separation distance
     min_separation = 1.5; % [m]
@@ -184,9 +183,15 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
         % obstacle avoidance constraint
         px_k = Xk(1);
         py_k = Xk(2);
+        pz_k = Xk(3);
+
+        % distance^2 from obstacle center
+        d2_k = (px_k - obs_center_3d(1))^2 + ...
+               (py_k - obs_center_3d(2))^2 + ...
+               (pz_k - obs_center_3d(3))^2;
 
         % setup px, px to be outside of radius R_safe
-        g_obs_k = R_safe^2 - ((px_k - obs_center(1))^2 + (py_k - obs_center(2))^2);;
+        g_obs_k = R_safe^2 - d2_k;
         g_obstacle = [g_obstacle; g_obs_k];
     end
 
@@ -195,16 +200,20 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
     x_err_N = X_var(:, N+1) - xref_N;
     obj     = obj + x_err_N.'*Qf*x_err_N;
 
-        % obstacle constraint at terminal state X(:, N+1)
+    % obstacle constraint at terminal state X(:, N+1)
     XN  = X_var(:, N+1);
     pxN = XN(1);
     pyN = XN(2);
+    pzN = XN(3);
 
-    g_obs_N = R_safe^2 - ((pxN - obs_center(1))^2 + (pyN - obs_center(2))^2);
-    g_obs   = [g_obs; g_obs_N];
+    d2_N    = (pxN - obs_center_3d(1))^2 + ...
+              (pyN - obs_center_3d(2))^2 + ...
+              (pzN - obs_center_3d(3))^2;
+    g_obs_N = R_safe^2 - d2_N;
+    g_obstacle   = [g_obstacle; g_obs_N];
 
     % combine all constraints
-    g = [g_dyn; g_obs];
+    g = [g_dynamics; g_obstacle];
 
     % make the decision variables into a single column vector
     OPT_X = reshape(X_var, n_states*(N+1), 1);
@@ -278,7 +287,7 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
     nmpc.args.ubg = ubg;
 
     % obstacle information
-    nmpc.obs_center = obs_center;
+    nmpc.obs_center3d = obs_center_3d;
     nmpc.obs_radius = obs_radius;
     nmpc.min_sep    = min_separation;
     nmpc.R_safe     = R_safe;

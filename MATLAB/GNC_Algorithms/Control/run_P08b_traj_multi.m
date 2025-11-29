@@ -17,7 +17,7 @@ function run_P08b_traj_multi()
 
     % parameters
     dt_dyn = 1/3;
-    flight_duration = 60;
+    flight_duration = 20;
     Ts = dt_dyn;
 
     N_horizon = 15;                       % prediction horizon length
@@ -138,8 +138,8 @@ function run_P08b_traj_multi()
         
         switch CONTROL_MODE
             case 'position'
-                %px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
-                px4_send_trajectory(client, x_ref_curr(1), x_ref_curr(2), x_ref_curr(3), 0, config);
+                px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
+                %px4_send_trajectory(client, x_ref_curr(1), x_ref_curr(2), x_ref_curr(3), 0, config);
                 
             case 'attitude'
                 [q_desired, roll_des, pitch_des, yaw_des, angle_limited] = saturate_attitude(x_next, deg2rad(15));

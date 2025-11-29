@@ -215,6 +215,7 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
     ubg = zeros(n_constr, 1);
 
     nmpc.solver = solver;
+    nmpc.F_RK4     = F_RK4;
     nmpc.Ts = Ts;
     nmpc.N = N;
     nmpc.n_states = n_states;

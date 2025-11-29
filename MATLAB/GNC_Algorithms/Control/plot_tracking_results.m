@@ -188,6 +188,46 @@ function plot_tracking_results(matfile, method_name)
     ylabel('\tau [Nm]');
     legend('\tau_x','\tau_y','\tau_z','Location','best');
 
+    % 3D trajectory: actual vs reference
+    fig_traj3d = figure;
+    set(fig_traj3d, 'Units','pixels', 'Position',[230 230 fig_width fig_height]);
+
+    plot3(X(1,:),    X(2,:),    X(3,:),    'LineWidth', 1.8); hold on;
+    plot3(x_ref(1,:),x_ref(2,:),x_ref(3,:),'--', 'LineWidth', 1.8);
+    hold off;
+    grid on; axis equal;
+    xlabel('x [m]');
+    ylabel('y [m]');
+    zlabel('z [m]');
+    legend('actual','reference','Location','best');
+    title(['3D Trajectory - ', method_name]);
+    view(3);
+
+    % top view (XY)
+    fig_traj2d = figure;
+    set(fig_traj2d, 'Units','pixels', 'Position',[260 260 fig_width fig_height]);
+
+    plot(X(1,:),    X(2,:),    'LineWidth', 1.8); hold on;
+    plot(x_ref(1,:),x_ref(2,:),'--', 'LineWidth', 1.8);
+    hold off;
+    grid on; axis equal;
+    xlabel('x [m]');
+    ylabel('y [m]');
+    legend('actual','reference','Location','best');
+    title(['XY Trajectory (Top View) - ', method_name]);
+
+    % side view (XZ)
+    fig_traj_xz = figure;
+    set(fig_traj_xz, 'Units','pixels', 'Position',[290 290 fig_width fig_height]);
+    plot(X(1,:),    X(3,:),    'LineWidth', 1.8); hold on;
+    plot(x_ref(1,:),x_ref(3,:),'--', 'LineWidth', 1.8);
+    hold off;
+    grid on; axis equal;
+    xlabel('x [m]');
+    ylabel('z [m]');
+    legend('actual','reference','Location','best');
+    title(['X-Z Trajectory (Side View) - ', method_name]);
+
     %Position error metrics (RMSE + max)
     pos_err = E(1:3,:);                        % 3 x N
     err_norm = sqrt(sum(pos_err.^2, 1));

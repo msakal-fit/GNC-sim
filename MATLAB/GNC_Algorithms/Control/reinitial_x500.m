@@ -1,5 +1,9 @@
 function reinitial_x500(flight_mode)
     % Reinitializes the X500 drone to a known state.
+
+    if nargin == 0 || isempty(flight_mode)
+        flight_mode = "point";
+    end
     config = px4_get_config();
     client = px4_connect(config.ip_address, config.port);
 

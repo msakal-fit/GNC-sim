@@ -1,7 +1,7 @@
-% filename: MATLAB/GNC_Algorithms/Control/plot_point_stab_results.m
+% filename: MATLAB/GNC_Algorithms/Control/plot_tracking_results.m
 %
 
-function plot_point_stab_results(matfile, method_name)
+function plot_tracking_results(matfile, method_name)
 
     % Load logged data
     S = load(matfile);
@@ -11,7 +11,7 @@ function plot_point_stab_results(matfile, method_name)
     X = L.state;        % 13 x N
     E = L.error;        % 13 x N
     U = L.control;      % 4 x N
-    x_ref = L.x_ref;    % 13 x 1
+    x_ref = L.ref;    % 13 x N
 
     close all; % close previous figures
 
@@ -27,36 +27,42 @@ function plot_point_stab_results(matfile, method_name)
     plot(t, X(1,:), 'LineWidth', 1.8); hold on;
     plot(t, X(2,:), 'LineWidth', 1.8);
     plot(t, X(3,:), 'LineWidth', 1.8);
-    plot(t, x_ref(1)*ones(size(t)), '--', 'LineWidth', 1.5);
-    plot(t, x_ref(2)*ones(size(t)), '--', 'LineWidth', 1.5);
-    plot(t, x_ref(3)*ones(size(t)), '--', 'LineWidth', 1.5);
+    plot(t, x_ref(1,:)', '--', 'LineWidth', 1.5);
+    plot(t, x_ref(2,:)', '--', 'LineWidth', 1.5);
+    plot(t, x_ref(3,:)', '--', 'LineWidth', 1.5);
     hold off;
     
     grid on;
     ylabel('pos [m]');
     legend('x','y','z','x_{ref}','y_{ref}','z_{ref}','Location','best');
-    title(['States - ', method_name]);
+    title(['States (Tracking) - ', method_name]);
 
     % Velocity
     subplot(3,1,2);
     plot(t, X(4,:), 'LineWidth', 1.8); hold on;
     plot(t, X(5,:), 'LineWidth', 1.8);
     plot(t, X(6,:), 'LineWidth', 1.8);
+    plot(t, x_ref(4,:)', '--', 'LineWidth', 1.5);
+    plot(t, x_ref(5,:)', '--', 'LineWidth', 1.5);
+    plot(t, x_ref(6,:)', '--', 'LineWidth', 1.5);
     hold off;
     grid on;
     ylabel('vel [m/s]');
-    legend('v_x','v_y','v_z','Location','best');
+    legend('v_x','v_y','v_z','v_{x,ref}','v_{y,ref}','v_{z,ref}','Location','best');
 
     % Body rates
     subplot(3,1,3);
     plot(t, X(11,:), 'LineWidth', 1.8); hold on;
     plot(t, X(12,:), 'LineWidth', 1.8);
     plot(t, X(13,:), 'LineWidth', 1.8);
+    plot(t, x_ref(11,:)', '--', 'LineWidth', 1.5);
+    plot(t, x_ref(12,:)', '--', 'LineWidth', 1.5);
+    plot(t, x_ref(13,:)', '--', 'LineWidth', 1.5);
     hold off;
     grid on;
     ylabel('\omega [rad/s]');
     xlabel('t [s]');
-    legend('p','q','r','Location','best');
+    legend('p','q','r','p_{ref}','q_{ref}','r_{ref}','Location','best');
 
     % attitude
 
@@ -66,18 +72,33 @@ function plot_point_stab_results(matfile, method_name)
     q2 = X(9,:);
     q3 = X(10,:);
 
+    q0_ref = x_ref(7,:);
+    q1_ref = x_ref(8,:);
+    q2_ref = x_ref(9,:);
+    q3_ref = x_ref(10,:);
+
     N = length(t);
-    eul = zeros(N,3);   % [yaw, pitch, roll] for each time step
+    eul_act = zeros(N,3);   % [yaw, pitch, roll] for actual attitude
+    eul_ref = zeros(N,3);   % [yaw, pitch, roll] for reference attitude
 
     for k = 1:N
-        qk = [q0(k) q1(k) q2(k) q3(k)];
-        qk = qk / norm(qk);                 % safety normalization
-        eul(k,:) = quat2eul(qk, 'ZYX');     % [yaw, pitch, roll]
+        qa = [q0(k)    q1(k)    q2(k)    q3(k)];
+        qa = qa / norm(qa);                 % safety normalization
+        eul_act(k,:) = quat2eul(qa, 'ZYX');     % [yaw, pitch, roll]
+
+
+        qr = [q0_ref(k) q1_ref(k) q2_ref(k) q3_ref(k)];
+        qr = qr / norm(qr);                 % safety normalization
+        eul_ref(k,:) = quat2eul(qr, 'ZYX');     % [yaw, pitch, roll]
     end
 
-    roll  = eul(:,3);
-    pitch = eul(:,2);
-    yaw   = eul(:,1);
+    roll_act      = eul_act(:,3);
+    pitch_act     = eul_act(:,2);
+    yaw_act       = eul_act(:,1);
+
+    roll_ref  = eul_ref(:,3);
+    pitch_ref = eul_ref(:,2);
+    yaw_ref   = eul_ref(:,1);
 
     fig_att = figure;
     set(fig_att, 'Units','pixels', 'Position',[130 130 fig_width fig_height]);
@@ -94,17 +115,19 @@ function plot_point_stab_results(matfile, method_name)
     legend('q_0','q_1','q_2','q_3','Location','best');
     title(['Attitude (Quaternion + Euler) - ', method_name]);
 
-    % Euler angles in degrees
+    % Euler angles in degrees (actual vs reference)
     subplot(2,1,2);
-    plot(t, rad2deg(roll),  'LineWidth', 1.8); hold on;
-    plot(t, rad2deg(pitch), 'LineWidth', 1.8);
-    plot(t, rad2deg(yaw),   'LineWidth', 1.8);
+    plot(t, rad2deg(roll_act),      'LineWidth', 1.8); hold on;
+    plot(t, rad2deg(pitch_act),     'LineWidth', 1.8);
+    plot(t, rad2deg(yaw_act),       'LineWidth', 1.8);
+    plot(t, rad2deg(roll_ref),  '--', 'LineWidth', 1.5);
+    plot(t, rad2deg(pitch_ref), '--', 'LineWidth', 1.5);
+    plot(t, rad2deg(yaw_ref),   '--', 'LineWidth', 1.5);
     hold off;
     grid on;
     xlabel('t [s]');
     ylabel('angle [deg]');
-    legend('roll','pitch','yaw','Location','best');
-
+    legend('roll (act)','pitch (act)','yaw (act)','roll (ref)','pitch (ref)','yaw (ref)','Location','best');
 
     fig_err = figure;
     set(fig_err, 'Units','pixels', 'Position',[150 150 fig_width fig_height]);
@@ -142,8 +165,8 @@ function plot_point_stab_results(matfile, method_name)
     xlabel('t [s]');
     legend('e_p','e_q','e_r','Location','best');
 
-    % Control inputs
 
+    % Control inputs
     fig_ctrl = figure;
     set(fig_ctrl, 'Units','pixels', 'Position',[200 200 fig_width fig_height]);
 

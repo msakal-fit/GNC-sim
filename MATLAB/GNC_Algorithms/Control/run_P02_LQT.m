@@ -19,7 +19,7 @@ function run_P02_LQT()
     switch CONTROL_MODE
         case 'position'
             dt_dyn = 1/3;
-            flight_duration = 30;
+            flight_duration = 60;
         case 'attitude'
             dt_dyn = 1/250;
             flight_duration = 10;
@@ -143,9 +143,9 @@ function run_P02_LQT()
         
         switch CONTROL_MODE
             case 'position'
-                %px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
+                px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
                 yaw_ref = atan2(xref(5), xref(4));
-                px4_send_trajectory(client, xref(1), xref(2), xref(3), yaw_ref, config);
+                %px4_send_trajectory(client, xref(1), xref(2), xref(3), yaw_ref, config);
             case 'attitude'
                 [q_desired, roll_des, pitch_des, yaw_des, angle_limited] = saturate_attitude(x_next, deg2rad(15));
                 px4_send_attitude_setpoint(client, thrust_cmd, q_desired(1), q_desired(2), q_desired(3), q_desired(4), config);
@@ -201,13 +201,19 @@ function run_P02_LQT()
         
         t = t + dt_dyn;
         elapsed = toc(loop_start);
+
+        % Store CPU time per control step
+        i = log_data.index - 1;           % last written sample
+        log_data.step_time(i) = elapsed;  % seconds
+
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);
         end
     end
     
     save_log_data(log_data, 'log_p02_lqt.mat');
-    plot_P02_lqt_results('log_p02_lqt.mat');
+    %plot_P02_lqt_results('log_p02_lqt.mat');
+    plot_tracking_results('log_p02_lqt.mat', 'LQT Controller');
 
     reinitial_x500("tracking");
 

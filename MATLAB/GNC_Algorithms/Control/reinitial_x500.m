@@ -27,7 +27,7 @@ function reinitial_x500(flight_mode)
     if flight_mode == "point"
         pause(10);
     elseif flight_mode == "tracking"
-        pause(60);
+        pause(20);
     end
 
     px4_initiate_landing(client, config);

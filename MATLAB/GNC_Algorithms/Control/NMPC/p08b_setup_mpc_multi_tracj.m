@@ -97,14 +97,13 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
     Xk_next = Xk_sym + (Ts/6)*(k1 + 2*k2 + 2*k3 + k4);
     F_RK4   = Function('F_RK4', {Xk_sym, Uk_sym}, {Xk_next});
 
-
     % setup cost function
     Q_pos = diag([ 200, 200, 50 ]);
     Q_vel = diag([ 2,  2,  2  ]);
     Q_q   = diag([ 20, 20, 20, 20 ]);
-    Q_om  = diag([ 2,  2,  2 ]);
+    Q_omega  = diag([ 2,  2,  2 ]);
 
-    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_om);
+    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
     Qf = Q;    % terminal weight
 
     % Input weight

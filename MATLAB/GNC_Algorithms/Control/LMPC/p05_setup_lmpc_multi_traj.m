@@ -13,8 +13,7 @@ function lmpc = p05_setup_lmpc_multi_traj(px4_config, Ts, N, Ad, Bd)
     m  = px4_config.m;
     g  = px4_config.g;
 
-
-         % Hover thrust 
+    % Hover thrust 
     T_hover = m * g;
 
     % input bounds
@@ -87,8 +86,8 @@ function lmpc = p05_setup_lmpc_multi_traj(px4_config, Ts, N, Ad, Bd)
 
         obj = obj + x_err.'*Q*x_err + u_err.'*R*u_err + du.'*R*du;
 
-        % Linear discrete-time dynamics
-        Xk_next = Ad * Xk + Bd * Uk;
+        % linear model around hover input U_ref and reference state xref_k
+        Xk_next = xref_k + Ad * (Xk - xref_k) + Bd * (Uk - U_ref);
 
         % Dynamics constraint: X_{k+1} - (Ad X_k + Bd U_k) = 0
         g = [g; Xk1 - Xk_next];

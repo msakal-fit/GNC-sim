@@ -42,9 +42,16 @@ function [u_applied, aux] = p07_mpc_step(x_curr, Xref_hor, u_prev, nmpc)
     % apply first control input
     u_applied = U_opt_mat(:,1);
 
+    if isfield(nmpc, 'F_traj')
+        X_pred = full(nmpc.F_traj(x_curr, U_opt_mat));   % (13 x (N+1))
+    else
+        X_pred = [];
+    end
+
     % pack into
     aux = struct;
     aux.U_opt        = U_opt_mat;           % full optimal sequence
+    aux.X_opt        = X_pred;              % predicted state trajectory
     aux.solver_stats = nmpc.solver.stats(); % IPOPT stats
 
 end

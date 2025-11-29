@@ -17,17 +17,24 @@ function run_P07_NMPC()
 
     % parameters
     dt_dyn = 1/3;
-    flight_duration = 120;
+    flight_duration = 60;
     Ts = dt_dyn;
 
     N_horizon = 15;                       % prediction horizon length
     nmpc = p07_setup_nmpc(px4_config, Ts, N_horizon);
 
-    % Trajectory configuration (circle)
-    traj_cfg.R      = 2.0;        % radius [m]
-    traj_cfg.V      = 0.8;        % tangential speed [m/s]
-    traj_cfg.center = [0; 2];     % [cx; cy]
-    traj_cfg.z0     = -2.0;       % constant altitude
+    % % Trajectory configuration (circle)
+    % traj_cfg.R      = 2.0;        % radius [m]
+    % traj_cfg.V      = 0.8;        % tangential speed [m/s]
+    % traj_cfg.center = [0; 2];     % [cx; cy]
+    % traj_cfg.z0     = -2.0;       % constant altitude
+
+    refcfg.z0 = config.takeoff_altitude;  % constant altitude for line traj
+
+    % Trajectory configuration for straight line
+    refcfg.p0  = [0; 0; refcfg.z0];   % start at (0,0,z0)
+    refcfg.v   = [0.1; 0; 0];         % 0.5 m/s along +x
+    refcfg.yaw = 0;                   % face +x
     
     % % TARGET/REFERENCE STATES
     % x_ref = [ ...
@@ -81,7 +88,7 @@ function run_P07_NMPC()
     log_data = initialize_logging();
 
      % simulation loop
-    fprintf('Starting the NMPC simulation...\n');
+    fprintf('Starting the NMPC Single Shooting simulation...\n');
     t = 0;
     
     u_prev = U_eq;
@@ -101,7 +108,7 @@ function run_P07_NMPC()
         Xref_hor = zeros(13, N_horizon);
         for k = 1:N_horizon
             t_k = t + (k-1)*Ts;
-            Xref_hor(:,k) = traj_circle(t_k, traj_cfg);
+            Xref_hor(:,k) = traj_line(t_k, refcfg);            
         end
 
         % current reference (for logging/errors)
@@ -131,8 +138,8 @@ function run_P07_NMPC()
         
         switch CONTROL_MODE
             case 'position'
-                %px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
-                px4_send_trajectory(client, x_ref_curr(1), x_ref_curr(2), x_ref_curr(3), 0, config);
+                px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
+                %px4_send_trajectory(client, x_ref_curr(1), x_ref_curr(2), x_ref_curr(3), 0, config);
                 
             case 'attitude'
                 [q_desired, roll_des, pitch_des, yaw_des, angle_limited] = saturate_attitude(x_next, deg2rad(15));
@@ -189,13 +196,19 @@ function run_P07_NMPC()
 
         t = t + dt_dyn;
         elapsed = toc(loop_start);
+
+        % Store CPU time per control step
+        i = log_data.index - 1;           % last written sample
+        log_data.step_time(i) = elapsed;  % seconds
+
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);
         end
     end
     
     save_log_data(log_data, 'log_p07_nmpc.mat');
-    plot_P07_nmpc_results('log_p07_nmpc.mat');
+    %plot_P07_nmpc_results('log_p07_nmpc.mat');
+    plot_tracking_results('log_p07_nmpc.mat', 'P07 - NMPC Single Shooting');
 
     px4_initiate_landing(client, config);
     pause(5);

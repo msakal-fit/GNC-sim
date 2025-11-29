@@ -88,20 +88,18 @@ function nmpc = p07_setup_nmpc(px4_config, Ts, N)
 
 
     % Setup cost function weights
-    % [ px py pz  vx vy vz  q0 q1 q2 q3  p q r ]
-    Q_pos = diag([  50,   50,  50]);
-    Q_vel = diag([  2,   2,   2]);
-    Q_q   = diag([ 20,  20,  20, 20]);
-    Q_om  = diag([  2,   2,   2]);
+    Q_pos = diag([  50,  5, 5 ]);
+    Q_vel = diag([  12,  2,  2 ]);
+    Q_q   = diag([ 20, 20, 20, 20 ]);
+    Q_omega  = diag([  2,  2,  2 ]);
+    Q = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
 
-    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_om);
-    Qf = Q; % terminal weigth = state weight
+    Qf = 10 * Q;  % terminal cost weight
 
-    % Input weight
-    R = diag([ 0.3,  0.1,  0.1,  0.1 ]);
+    R = diag([ 2,  1,  1,  1 ]);
 
     % Smoothness weight
-    S = diag([ 0.1, 0.05, 0.05, 0.05 ]);
+    S = diag([ 2, 1, 1, 1 ]);
 
     % Hover input
     U_ref = [T_hover; 0; 0; 0];

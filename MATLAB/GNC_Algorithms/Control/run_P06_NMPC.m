@@ -197,7 +197,7 @@ function run_P06_NMPC()
     log_data.x_ref = x_ref;
     
     save_log_data(log_data, 'log_p06_nmpc.mat');
-    plot_point_stab_results('log_p06_nmpc.mat', ' P06 - NMPC');
+    plot_point_stab_results('log_p06_nmpc.mat', ' P06 - NMPC Single Shooting');
 
     % px4_initiate_landing(client, config);
     % pause(5);

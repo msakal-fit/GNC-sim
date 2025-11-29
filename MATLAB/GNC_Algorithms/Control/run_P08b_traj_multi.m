@@ -17,17 +17,24 @@ function run_P08b_traj_multi()
 
     % parameters
     dt_dyn = 1/3;
-    flight_duration = 120;
+    flight_duration = 60;
     Ts = dt_dyn;
 
     N_horizon = 15;                       % prediction horizon length
     nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N_horizon);
 
-    % Trajectory configuration (circle)
-    traj_cfg.R      = 2.0;        % radius [m]
-    traj_cfg.V      = 0.8;        % tangential speed [m/s]
-    traj_cfg.center = [0; 2];     % [cx; cy]
-    traj_cfg.z0     = -2.0;       % constant altitude
+    % % Trajectory configuration (circle)
+    % traj_cfg.R      = 2.0;        % radius [m]
+    % traj_cfg.V      = 0.8;        % tangential speed [m/s]
+    % traj_cfg.center = [0; 2];     % [cx; cy]
+    % traj_cfg.z0     = -2.0;       % constant altitude
+
+    refcfg.z0 = config.takeoff_altitude;  % constant altitude for line traj
+
+    % Trajectory configuration for straight line
+    refcfg.p0  = [0; 0; refcfg.z0];   % start at (0,0,z0)
+    refcfg.v   = [0.1; 0; 0];         % 0.5 m/s along +x
+    refcfg.yaw = 0;                   % face +x
     
     % % TARGET/REFERENCE STATES
     % x_ref = [ ...
@@ -101,7 +108,7 @@ function run_P08b_traj_multi()
         Xref_hor = zeros(13, N_horizon);
         for k = 1:N_horizon
             t_k = t + (k-1)*Ts;
-            Xref_hor(:,k) = traj_circle(t_k, traj_cfg);
+            Xref_hor(:,k) = traj_line(t_k, refcfg);     
         end
 
         % current reference (for logging/errors)
@@ -189,18 +196,24 @@ function run_P08b_traj_multi()
 
         t = t + dt_dyn;
         elapsed = toc(loop_start);
+
+        % Store CPU time per control step
+        i = log_data.index - 1;           % last written sample
+        log_data.step_time(i) = elapsed;  % seconds
+
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);
         end
     end
     
     save_log_data(log_data, 'log_p08b_nmpc.mat');
-    plot_P07_nmpc_results('log_p08b_nmpc.mat'); % reuse the same function with p07
+    %plot_P07_nmpc_results('log_p08b_nmpc.mat'); % reuse the same function with p07
+    plot_tracking_results('log_p08b_nmpc.mat', 'P08b - NMPC Tracking (Multi Shooting)');
 
     % px4_initiate_landing(client, config);
     % pause(5);
     % px4_disarm_drone(client, config);
-    reinitial_x500();
+    reinitial_x500("tracking");
 
 end
 

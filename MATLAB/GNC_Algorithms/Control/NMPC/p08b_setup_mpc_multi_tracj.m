@@ -107,7 +107,7 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
     Qf = Q;    % terminal weight
 
     % Input weight
-    R = diag([ 0.3, 0.1, 0.1, 0.1 ]);
+    R = diag([ 2,  1,  1,  1 ]);
 
     % Hover input
     U_ref = [T_hover; 0; 0; 0];

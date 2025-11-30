@@ -91,7 +91,7 @@ function nmpc = p06_setup_mpc(px4_config, Ts, N)
     % [ px py pz  vx vy vz  q0 q1 q2 q3  p q r ]
     Q_pos = diag([  5,  5, 40 ]);
     Q_vel = diag([  2,  2,  12 ]);
-    Q_q   = diag([ 40, 20, 20, 20 ]);
+    Q_q   = diag([ 20, 20, 20, 20 ]);
     Q_omega  = diag([  2,  2,  2 ]);
 
     Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
@@ -170,6 +170,28 @@ function nmpc = p06_setup_mpc(px4_config, Ts, N)
         ubx(idx) = [ T_max;  tau_max;  tau_max;  tau_max ];
     end
 
+    % Function to simulate system over horizon given initial state and input trajectory
+    x_traj0 = SX.sym('x_traj0', n_states, 1);
+    U_traj  = SX.sym('U_traj',  n_controls, N);
+    X_traj  = SX.sym('X_traj',  n_states,   N+1);
+
+    Xk = x_traj0;
+    X_traj(:,1) = Xk;
+    for k = 1:N
+        uk = U_traj(:,k);
+
+        % same RK4 used inside the cost
+        k1 = f(Xk,               uk);
+        k2 = f(Xk + (Ts/2)*k1,   uk);
+        k3 = f(Xk + (Ts/2)*k2,   uk);
+        k4 = f(Xk + Ts*k3,       uk);
+
+        Xk = Xk + (Ts/6)*(k1 + 2*k2 + 2*k3 + k4);
+        X_traj(:,k+1) = Xk;
+    end
+
+    F_traj = Function('F_traj', {x_traj0, U_traj}, {X_traj});
+
     % Pack everything into a struct
     nmpc.solver      = solver;
     nmpc.Ts          = Ts;
@@ -186,5 +208,8 @@ function nmpc = p06_setup_mpc(px4_config, Ts, N)
 
     % hover input for warm start
     nmpc.U_ref       = U_ref;
+
+    % trajectory reconstruction function
+    nmpc.F_traj     = F_traj;
 
 end

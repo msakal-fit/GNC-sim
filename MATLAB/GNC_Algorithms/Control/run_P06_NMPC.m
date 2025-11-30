@@ -30,8 +30,10 @@ function run_P06_NMPC()
 
     Ts = dt_dyn;
 
-    N_horizon = 25;                       % prediction horizon length
+    N_horizon = 15;                       % prediction horizon length
     fprintf('Setting up NMPC with Ts=%.3f s and N=%d\n', Ts, N_horizon);
+
+    k_lookahead = 3; % which future ref to track
 
     % time horizon in seconds
     time_horizon = Ts * N_horizon;
@@ -110,17 +112,26 @@ function run_P06_NMPC()
         % with current state: x_curr
         % compute the LQR around current state
         % Given x_curr and x_ref, compute optimal control u_nmpc
+        t_mpc_start = tic;
         [u_nmpc, aux_nmpc] = p06_mpc_step(x_curr, x_ref, nmpc);
+        t_mpc = toc(t_mpc_start);
         
         % saturate the control inputs
         u_sat = saturate_control(u_nmpc, px4_config);
        
-        % Nonlinear dynamics integration
-        dynamics_func = @(t, x) drone_nonlinear_dynamics(t, x, u_sat, px4_config);
-        x_next = RK4(dynamics_func, x_curr, dt_dyn, t);
+        % % Nonlinear dynamics integration
+        % dynamics_func = @(t, x) drone_nonlinear_dynamics(t, x, u_sat, px4_config);
+        % x_next = RK4(dynamics_func, x_curr, dt_dyn, t);
         
-        % Normalize the predicted quaternion
-        x_next(7:10) = x_next(7:10) / norm(x_next(7:10));
+        % % Normalize the predicted quaternion
+        % x_next(7:10) = x_next(7:10) / norm(x_next(7:10));
+
+        % guidance selection
+        idx_look = min(k_lookahead, nmpc.N + 1);   % safety
+        x_sp = aux_nmpc.X_opt(:, idx_look);        % [13x1] predicted state
+        x_sp(7:10) = x_sp(7:10) / norm(x_sp(7:10));%
+
+        yaw_sp = 0;
         
         thrust_cmd = u_sat(1);
         tau_cmd = u_sat(2:4);
@@ -130,7 +141,9 @@ function run_P06_NMPC()
         
         switch CONTROL_MODE
             case 'position'
-                px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
+                %px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
+
+                px4_send_trajectory(client, x_sp(1), x_sp(2), x_sp(3), yaw_sp, config);
                 
             case 'attitude'
                 [q_desired, roll_des, pitch_des, yaw_des, angle_limited] = saturate_attitude(x_next, deg2rad(15));
@@ -175,19 +188,28 @@ function run_P06_NMPC()
             if u_sat(1) ~= u_nmpc(1), fprintf(' [T_SAT]'); end
             if any(abs(u_nmpc(2:4)) > 1.5), fprintf(' [τ_SAT]'); end
             fprintf('\n');
+            fprintf('| T_virt=%.1fN τ_virt=[%.3f,%.3f,%.3f]Nm | N=%d k_look=%d t_MPC=%.3fs\n', ...
+                thrust_cmd, tau_cmd(1), tau_cmd(2), tau_cmd(3), ...
+                nmpc.N, k_lookahead, t_mpc);
         end
 
         % Logging and Timing
         log_data = update_log(log_data, t, x_curr, x_err, u_sat);
-        i_log = log_data.index - 1;
-        log_data.pred(:, i_log) = x_next;
+        % Add reference and predicted state for this sample
+        i_log = log_data.index - 1;      % last sample index used in update_log (because i is updated already)
+        
+        log_data.x_ref(:, i_log)  = x_ref;
+        
+        log_data.pred(:, i_log) = x_sp;
+
+        % MPC solver time
+        log_data.mpc_time(i_log) = t_mpc;
 
         t = t + dt_dyn;
         elapsed = toc(loop_start);
 
-         % Store CPU time per control step
-        i = log_data.index - 1;           % last written sample
-        log_data.step_time(i) = elapsed;  % seconds
+        % Store CPU time per control step
+        log_data.step_time(i_log) = elapsed;  % seconds
 
         if elapsed < dt_dyn
             pause(dt_dyn - elapsed);

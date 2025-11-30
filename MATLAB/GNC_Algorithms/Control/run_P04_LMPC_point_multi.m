@@ -58,6 +58,11 @@ function run_P04_LMPC_point_multi()
     lmpc = p04_setup_lmpc_multi(px4_config, Ts, N_horizon, Ad, Bd);
 
     k_lookahead = 3; % which future ref to track
+
+    fprintf('Setting up with Ts=%.3f s and N=%d\n', Ts, N_horizon);
+        % time horizon in seconds
+    time_horizon = Ts * N_horizon;
+    fprintf('Time horizon: %.3f seconds\n', time_horizon);
     
     fprintf('Starting Simulation...\n');
     fprintf('Control mode: %s\n', CONTROL_MODE);

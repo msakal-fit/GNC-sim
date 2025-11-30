@@ -38,7 +38,7 @@ function run_P01_LQR()
     % WEIGHTS FOR YOUR CONTROLLER
     Q_pos = diag([  5,  5, 40 ]);
     Q_vel = diag([  2,  2,  12 ]);
-    Q_q   = diag([ 40, 20, 20, 20 ]);
+    Q_q   = diag([ 20, 20, 20, 20 ]);
     Q_omega  = diag([  2,  2,  2 ]);
     Q = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
 

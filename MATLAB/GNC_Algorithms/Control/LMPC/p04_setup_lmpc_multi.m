@@ -14,9 +14,9 @@ function lmpc = p04_setup_lmpc_multi(px4_config, Ts, N, Ad, Bd)
     m  = px4_config.m;
     g  = px4_config.g;
     J  = px4_config.inertia;
-    Jx = J(1,1);
-    Jy = J(2,2);
-    Jz = J(3,3);
+    % Jx = J(1,1);
+    % Jy = J(2,2);
+    % Jz = J(3,3);
 
      % Hover thrust 
     T_hover = m * g;
@@ -28,30 +28,27 @@ function lmpc = p04_setup_lmpc_multi(px4_config, Ts, N, Ad, Bd)
     % Torques bounds
     tau_max = 0.2;   % [N·m]
 
-    % state bounds
+    % state bounds (ignored by making it big)
     pos_min = [-10, -10, -10];
     pos_max = [ 10,  10,   0];
 
-    vel_min = [-5, -5, -5];
-    vel_max = [ 5,  5,  5];
+    vel_min = [-50, -50, -50];
+    vel_max = [ 50,  50,  50];
 
     % quat & rates bounds are left unbounded
 
     % Setup cost function weights
-    % [ px py pz  vx vy vz  q0 q1 q2 q3  p q r ]
-    Q_pos = diag([  200,   200,  50]);
-    Q_vel = diag([  2,   2,   2]);
-    Q_q   = diag([ 20,  20,  20, 20]);
-    Q_om  = diag([  2,   2,   2]);
-
-    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_om);
+    Q_pos = diag([  5,  5, 40 ]);
+    Q_vel = diag([  2,  2,  12 ]);
+    Q_q   = diag([ 20, 20, 20, 20 ]);
+    Q_omega  = diag([  2,  2,  2 ]);
+    Q = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
     Qf = Q; % terminal weigth = state weight
 
-    % Input weight
-    R = diag([ 0.3,  0.1,  0.1,  0.1 ]);
+    R = diag([ 2,  1,  1,  1 ]);
 
     % Smoothness weight
-    S = diag([ 0.1, 0.05, 0.05, 0.05 ]);
+    % S = diag([ 0.1, 0.05, 0.05, 0.05 ]);
 
     % Hover input
     U_ref = [T_hover; 0; 0; 0];

@@ -50,7 +50,7 @@ function run_P02_LQT()
     %     0; 0; 0];  % body rates
 
     % WEIGHTS 
-    Q_pos = diag([  50,  5, 5 ]);
+    Q_pos = diag([  50,  5, 25 ]);
     Q_vel = diag([  12,  2,  2 ]);
     Q_q   = diag([ 20, 20, 20, 20 ]);
     Q_omega  = diag([  2,  2,  2 ]);
@@ -221,6 +221,8 @@ function run_P02_LQT()
             pause(dt_dyn - elapsed);
         end
     end
+
+    %log_data.x_ref = x_ref;
     
     save_log_data(log_data, 'log_p02_lqt.mat');
     %plot_P02_lqt_results('log_p02_lqt.mat');

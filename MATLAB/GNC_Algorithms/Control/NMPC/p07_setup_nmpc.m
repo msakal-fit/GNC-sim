@@ -88,14 +88,14 @@ function nmpc = p07_setup_nmpc(px4_config, Ts, N)
 
 
     % setup cost function
-    Q_pos = diag([ 200, 200, 50 ]);
+    Q_pos = diag([ 50, 5, 25 ]);
     Q_vel = diag([ 2,  2,  2  ]);
     Q_q   = diag([ 20, 20, 20, 20 ]);
     Q_omega  = diag([ 2,  2,  2 ]);
     Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
 
     % Input weight
-    R = diag([ 0.3, 0.1, 0.1, 0.1 ]);
+    R = diag([ 2,  1,  1,  1 ]);
 
     Qf = Q;  % terminal cost weight
 

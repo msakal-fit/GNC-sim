@@ -25,16 +25,27 @@ function lmpc = p05_setup_lmpc_multi_traj(px4_config, Ts, N, Ad, Bd)
 
 
     % Setup cost function weights
-    Q_pos = diag([ 200, 200,  50 ]);
-    Q_vel = diag([   2,   2,   2 ]);
+    Q_pos = diag([  50,  5, 25 ]);
+    Q_vel = diag([   12,   2,   2 ]);
     Q_q   = diag([  20,  20,  20, 20 ]);
-    Q_om  = diag([   2,   2,   2 ]);
+    Q_omega  = diag([   2,   2,   2 ]);
 
-    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_om);
+    R = diag([ 2,  1,  1,  1 ]);
+
+    Q  = blkdiag(Q_pos, Q_vel, Q_q, Q_omega);
     Qf = Q; % terminal weight
 
     % Input weight
     R = diag([ 2,  1,  1,  1 ]);
+
+    % print weights for logging purposes
+    disp('State weight matrix Q as diag:');
+    disp(Q_pos);
+    disp(Q_vel);
+    disp(Q_q);
+    disp(Q_omega);
+    disp('Input weight matrix R as diag:');
+    disp(R);
 
 
     % input hover

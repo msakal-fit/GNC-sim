@@ -258,7 +258,7 @@ function nmpc = p08b_setup_mpc_multi_tracj_obs(px4_config, Ts, N)
     n_dyn_constr = (N+1)*n_states;   % X0 + N dynamics steps
 
     % number of obstacle constraints: one per stage k=1..N and one at terminal
-    n_obs_constr = (N+1);            % adjust if you also add at k=0
+    n_obs_constr = (N+1);            % adjust if we also add at k=0
 
     % equality constraints: g_dyn == 0
     lbg_dyn = zeros(n_dyn_constr, 1);

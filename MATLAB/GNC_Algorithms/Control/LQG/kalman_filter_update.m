@@ -1,15 +1,15 @@
 % filename: MATLAB/GNC_Algorithms/Control/LQG/kalman_filter_update.m
+% linear kalman filter for quadcopter with 13-states
+
+
+% Inputs
+
+
+% Outputs
+
 
 function [x_pred, P_pred, aux] = kalman_filter_update( ...
     x_hat_prev, P_prev, u_prev, params, Q_k, R_k, dt)
-
-    % linear kalman filter for quadcopter with 13-states
-
-
-    % Inputs
-
-
-    % Outputs
 
 
     nx = 13; % number of states

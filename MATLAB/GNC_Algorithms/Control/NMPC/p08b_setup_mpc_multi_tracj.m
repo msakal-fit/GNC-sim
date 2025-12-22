@@ -10,7 +10,7 @@ function nmpc = p08b_setup_mpc_multi_tracj(px4_config, Ts, N)
     n_states    = 13;
     n_controls  = 4;
 
-        % physical parameters from quadcopter model
+    % physical parameters from quadcopter model
     m  = px4_config.m;
     g  = px4_config.g;
     J  = px4_config.inertia;

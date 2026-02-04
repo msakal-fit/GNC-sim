@@ -94,20 +94,12 @@ function run_P01_LQR()
         % get telemetry data
         telemetry = px4_get_telemetry(client, config);
         
-        % IMPLEMENT YOUR CONTROLLER HERE
-        % --- LQR block ---
         % get current state vector
-        % x_curr = state_vec(telemetry);
-        % x_curr(7:10) = x_curr(7:10) / norm(x_curr(7:10));
-
-        % % with current state: x_curr
-        % % compute the LQR around current state
-        % [u_lqr, K, aux] = lqr_controller(x_curr, x_ref, px4_config, Q, R);
-        
-        % x_err = x_curr - x_ref;
-
         x_curr = state_vec(telemetry);
         x_curr(7:10) = x_curr(7:10)/norm(x_curr(7:10));
+        
+        % IMPLEMENT YOUR CONTROLLER HERE
+        % --- LQR block ---
         x_err  = x_curr - x_eq;
         u_lqr  = U_eq - K*x_err;
         

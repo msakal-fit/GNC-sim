@@ -100,7 +100,6 @@ function run_P08a_point_multi()
         
         % get current state vector
         x_curr = state_vec(telemetry);
-
         x_curr(7:10) = x_curr(7:10) / norm(x_curr(7:10));
         
         % IMPLEMENT YOUR CONTROLLER HERE
@@ -108,29 +107,17 @@ function run_P08a_point_multi()
         x_err = x_curr - x_ref;
 
         % --- NMPC block ---
-        % with current state: x_curr
-        % compute the LQR around current state
-        % Given x_curr and x_ref, compute optimal control u_nmpc
         t_mpc_start = tic;
         [u_nmpc, aux_nmpc] = p08_mpc_step(x_curr, x_ref, nmpc);
         t_mpc = toc(t_mpc_start);
-
         
         % saturate the control inputs
         u_sat = saturate_control(u_nmpc, px4_config);
-       
-        % Nonlinear dynamics integration
-        % dynamics_func = @(t, x) drone_nonlinear_dynamics(t, x, u_sat, px4_config);
-        % x_next = RK4(dynamics_func, x_curr, dt_dyn, t);
-        
-        % % Normalize the predicted quaternion
-        % x_next(7:10) = x_next(7:10) / norm(x_next(7:10));
 
         % guidance selection
         idx_look = min(k_lookahead, nmpc.N + 1);   % safety
         x_sp = aux_nmpc.X_opt(:, idx_look);        % [13x1] predicted state
         x_sp(7:10) = x_sp(7:10) / norm(x_sp(7:10));%
-
         yaw_sp = 0;
         
         thrust_cmd = u_sat(1);
@@ -141,8 +128,6 @@ function run_P08a_point_multi()
         
         switch CONTROL_MODE
             case 'position'
-                % px4_send_trajectory(client, x_next(1), x_next(2), x_next(3), 0, config);
-
                 px4_send_trajectory(client, x_sp(1), x_sp(2), x_sp(3), yaw_sp, config);
                 
             case 'attitude'
